@@ -3,7 +3,7 @@ from praw.reddit import Comment, Reddit, Submission, Subreddit
 
 
 class RedditClient:
-    def __init__(self, client_id, client_secret, user_agent):
+    def __init__(self, client_id: str, client_secret: str, user_agent: str):
         self.client_id = client_id
         self.client_secret = client_secret
         self.user_agent = user_agent
@@ -12,10 +12,10 @@ class RedditClient:
 
 
     def get_comments_from_submission_list(self, 
-                                          subreddit_name, 
-                                          num_submissions, 
-                                          num_comments,
-                                          search):
+                                          subreddit_name: str, 
+                                          num_submissions: int, 
+                                          num_comments: int,
+                                          search: str):
     
         subreddit = _get_subreddit(self.reddit, subreddit_name)
     
