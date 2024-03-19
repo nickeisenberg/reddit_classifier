@@ -10,21 +10,24 @@ class Transformer(nn.Module):
         super().__init__()
         self.embedding = nn.Embedding(vocab_size, embed_size)
         self.position_encoding = PositionalEncoding(embed_size, max_length)
-        self.layers = nn.ModuleList([
-            TransformerBlock(embed_size, heads, dropout, forward_expansion)
-            for _ in range(num_layers)])
+        self.layers = nn.ModuleList(
+            [
+                TransformerBlock(embed_size, heads, dropout, forward_expansion)
+                for _ in range(num_layers)
+            ]
+        )
         self.dropout = nn.Dropout(dropout)
         self.fc_out = nn.Linear(embed_size, num_classes)
         
-    def forward(self, src):
-        src_mask = (src != 0).unsqueeze(1).unsqueeze(3)
+    def forward(self, x):
+        x_mask = (x != 0).unsqueeze(1).unsqueeze(3)
 
-        src_embedding = self.dropout(self.position_encoding(self.embedding(src)))
+        x_embedding = self.dropout(self.position_encoding(self.embedding(x)))
         
         for layer in self.layers:
-            src_embedding = layer(src_embedding, src_embedding, src_embedding, src_mask)
+            x_embedding = layer(x_embedding, x_mask)
         
-        out = src_embedding[:, 0, :]
+        out = x_embedding.mean(dim=1)
         out = self.fc_out(out)
         return out
 
@@ -44,10 +47,10 @@ class TransformerBlock(nn.Module):
 
         self.dropout = nn.Dropout(dropout)
 
-    def forward(self, value, key, query, mask):
-        attention = self.attention(value, key, query, mask)
+    def forward(self, x_embedded, mask):
+        attention = self.attention(x_embedded, mask)
 
-        x = self.dropout(self.norm1(attention + query))
+        x = self.dropout(self.norm1(attention + x_embedded))
         forward = self.feed_forward(x)
         out = self.dropout(self.norm2(forward + x))
         return out
@@ -78,21 +81,24 @@ class MultiHeadAttention(nn.Module):
 
         assert self.head_dim * heads == embed_size
 
-        self.values = nn.Linear(self.head_dim, self.head_dim, bias=False)
-        self.keys = nn.Linear(self.head_dim, self.head_dim, bias=False)
-        self.queries = nn.Linear(self.head_dim, self.head_dim, bias=False)
+        self.values = nn.Linear(self.embed_size, self.embed_size, bias=False)
+        self.keys = nn.Linear(self.embed_size, self.embed_size, bias=False)
+        self.queries = nn.Linear(self.embed_size, self.embed_size, bias=False)
 
         self.fc_out = nn.Linear(heads * self.head_dim, embed_size)
 
-    def forward(self, values, keys, query, mask):
-        N = query.shape[0]
-        value_len, key_len, query_len = values.shape[1], keys.shape[1], query.shape[1]
+    def forward(self, x_embedded, mask):
+        N = x.shape[0]
+        seq_len = x.shape[1]
 
-        # Split the embedding into self.heads pieces
-        values = values.reshape(N, value_len, self.heads, self.head_dim)
-        keys = keys.reshape(N, key_len, self.heads, self.head_dim)
-        queries = query.reshape(N, query_len, self.heads, self.head_dim)
+        values = self.values(x_embedded)
+        keys = self.keys(x_embedded)
+        queries = self.queries(x_embedded)
 
+        queries = queries.reshape(N, seq_len, self.heads, self.head_dim)
+        keys = keys.reshape(N, seq_len, self.heads, self.head_dim)
+        values = values.reshape(N, seq_len, self.heads, self.head_dim)
+        
         energy = torch.einsum("nqhd,nkhd->nhqk", [queries, keys])
 
         if mask is not None:
@@ -102,6 +108,17 @@ class MultiHeadAttention(nn.Module):
 
         out = torch.einsum(
             "nhql,nlhd->nqhd", [attention, values]
-        ).reshape(N, query_len, self.heads * self.head_dim)
+        ).reshape(N, seq_len, self.heads * self.head_dim)
 
         return self.fc_out(out)
+
+
+
+m = MultiHeadAttention(12, 3)
+x = torch.randn((50, 20, 12))
+m(x, None).shape
+
+
+t = Transformer(100, 12, 1, 4, 3)
+x = torch.randint(0, 100, (50, 20))
+t(x).shape
