@@ -30,6 +30,7 @@ class SelfAttention(nn.Module):
         dot = torch.bmm(queries, keys.transpose(1, 2))
         dot = dot / (k ** (1/2))
         dot = F.softmax(dot, dim=2)
+
         out = torch.bmm(dot, values).view(b, self.heads, t, s)
         out = out.transpose(1, 2).contiguous().view(b, t, s * self.heads)
 
