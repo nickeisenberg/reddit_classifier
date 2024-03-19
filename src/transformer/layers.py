@@ -113,12 +113,11 @@ class MultiHeadAttention(nn.Module):
         return self.fc_out(out)
 
 
-
-m = MultiHeadAttention(12, 3)
-x = torch.randn((50, 20, 12))
-m(x, None).shape
-
-
-t = Transformer(100, 12, 1, 4, 3)
-x = torch.randint(0, 100, (50, 20))
-t(x).shape
+if __name__ == "__main__":
+    m = MultiHeadAttention(12, 3)
+    x = torch.randn((50, 20, 12))
+    m(x, None).shape
+    
+    t = Transformer(100, 12, 1, 4, 3)
+    x = torch.randint(0, 100, (50, 20))
+    t(x).shape

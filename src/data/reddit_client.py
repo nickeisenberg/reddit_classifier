@@ -127,7 +127,7 @@ def _get_reddit(client_id: str, client_secret: str, user_agent: str):
         user_agent=user_agent)
 
 
-def _get_subreddit(reddit: Reddit, subreddit_name: str):
+def _get_subreddit(reddit: Reddit, subreddit_name: str) -> Subreddit:
     return reddit.subreddit(subreddit_name)
 
 
