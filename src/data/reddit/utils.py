@@ -2,37 +2,6 @@ import praw
 from praw.reddit import Comment, Reddit, Submission, Subreddit
 
 
-class RedditClient:
-    def __init__(self, client_id: str, client_secret: str, user_agent: str):
-        self.client_id = client_id
-        self.client_secret = client_secret
-        self.user_agent = user_agent
-
-        self.reddit = _get_reddit(client_id, client_secret, user_agent)
-
-
-    def get_comments_from_submission_list(self, 
-                                          subreddit_name: str, 
-                                          num_submissions: int, 
-                                          num_comments: int,
-                                          search: str):
-    
-        subreddit = _get_subreddit(self.reddit, subreddit_name)
-    
-        subs = _get_submission_list_from_subreddit(
-            subreddit=subreddit,
-            search=search,
-            no_of_submissions=num_submissions
-        )
-        
-        coms = _get_comments_from_submission_list(
-            submission_list=subs,
-            num_comments=num_comments
-        )
-    
-        return coms
-
-
 def _get_submission_list_from_subreddit(subreddit: Subreddit,
                                        sort_by: str ='top',
                                        search: str | None  = None,
@@ -80,8 +49,6 @@ def _get_comments_from_submission(submission: Submission,
 def _get_comments_from_submission_list(submission_list: list[Submission],
                                       num_comments=10):
 
-    print('Getting comments for...')
-
     submission_coms: dict[Submission, list[Comment]] = {
         submission: [] for submission in submission_list
     }
@@ -125,22 +92,3 @@ def _get_reddit(client_id: str, client_secret: str, user_agent: str):
         client_id=client_id,
         client_secret=client_secret,
         user_agent=user_agent)
-
-
-def _get_subreddit(reddit: Reddit, subreddit_name: str) -> Subreddit:
-    return reddit.subreddit(subreddit_name)
-
-
-if __name__ == "__main__":
-    client_id = 'NA7yHLvDpSwcAEA1nmibNQ'
-    client_secret = 'qq_Odz0Vq6vIOPziOz2JYnoUJkMPog'
-    user_agent = 'phython_act'
-    
-    reddit_client = RedditClient(client_id, client_secret, user_agent)
-    
-    coms = reddit_client.get_comments_from_submission_list(
-        "wallstreetbets",
-        1,
-        5,
-        "Daily"
-    )
