@@ -1,5 +1,6 @@
 import os 
-from src.data import make_reddit_comment_dataset
+from src.data.make import make_reddit_comment_dataset
+
 
 if __name__ == "__main__":
     client_id = os.environ["PRAW_CLIENT_ID"]

@@ -1,11 +1,9 @@
 import re
 import string
 import praw
-import os
 
-from praw.reddit import Comment, Reddit, Submission, Subreddit
+from praw.reddit import Comment, Submission, Subreddit
 from collections.abc import Iterator
-from tqdm import tqdm
 
 
 class RedditClient:
@@ -15,28 +13,6 @@ class RedditClient:
         self.user_agent = user_agent
 
         self._reddit = _get_reddit(client_id, client_secret, user_agent)
-
-
-    def get_submission_comments_by_subreddit_search(self,
-                                                   subreddit_name: str, 
-                                                   search: str,
-                                                   num_submissions: int,
-                                                   num_comments_per_submission: int,
-                                                   save_root: str):
-        print(f"Fetching submissions for {subreddit_name}")
-        submissions = self.get_submissions_by_subreddit_search(
-            subreddit_name, search, num_submissions=num_submissions
-        )
-        pbar = tqdm(submissions)
-        for i, submission in enumerate(pbar):
-            pbar.set_postfix(name=subreddit_name, num=f"{i + 1}/{num_submissions}")
-            _ = submission.comments.replace_more(limit=0)
-            with open(os.path.join(save_root, f"{subreddit_name}.txt"), "a") as af:
-                for comment in submission.comments.list()[: num_comments_per_submission]:
-                    _ = af.write(
-                        lower_text_and_remove_all_non_asci(comment.body) + "\n"
-                    )
-        return None
 
 
     def get_submissions_by_subreddit_search(self,

@@ -1,19 +1,15 @@
+from torchvision.datasets import ImageFolder
 from transformers import BertTokenizer
+import os
 
-with open("data/wallstreetbets.txt", "r") as af:
-    wsb = af.readlines()
+comments = os.listdir("data/wallstreetbets")
 
+with open(os.path.join("data", "wallstreetbets", comments[0]), "r") as af:
+    text = af.readline()
 
 tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
 
-encoded_inputs = tokenizer(
-    wsb, padding=True, truncation=True, max_length=512, return_tensors="pt"
+tokenizer.encode_plus(
+    text, add_special_tokens=True, padding='max_length', max_length=256, truncation=True
 )
 
-enc = encoded_inputs["input_ids"][0]
-
-tokenizer.decode(enc)
-
-tokenizer.convert_ids_to_tokens([3681, 13334, 2102, 20915, 2015])
-
-tokenizer.decode(tokenizer.encode("wallstreetbets"))
