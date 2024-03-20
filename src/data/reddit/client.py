@@ -23,8 +23,3 @@ class RedditClient:
         submissions:Iterator[Submission] = subreddit.search(search, sort=sort)
 
         return [*submissions][: num_submissions]
-    
-
-if __name__ == "__main__":
-    pass
-
