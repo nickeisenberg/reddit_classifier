@@ -4,9 +4,8 @@ import math
 
 
 class Transformer(nn.Module):
-    def __init__(self, vocab_size, embed_size=256, num_layers=6, 
-                 forward_expansion=4, heads=8, dropout=0.1, max_length=100, 
-                 num_classes=2):
+    def __init__(self, vocab_size, num_classes, max_length, embed_size, 
+                 num_layers=6, forward_expansion=4, heads=8, dropout=0.1):
         super().__init__()
         self.embedding = nn.Embedding(vocab_size, embed_size)
         self.position_encoding = PositionalEncoding(embed_size, max_length)
@@ -19,9 +18,7 @@ class Transformer(nn.Module):
         self.dropout = nn.Dropout(dropout)
         self.fc_out = nn.Linear(embed_size, num_classes)
         
-    def forward(self, x):
-        x_mask = (x != 0).unsqueeze(1).unsqueeze(3)
-
+    def forward(self, x, x_mask):
         x_embedding = self.dropout(self.position_encoding(self.embedding(x)))
         
         for layer in self.layers:
@@ -87,9 +84,9 @@ class MultiHeadAttention(nn.Module):
 
         self.fc_out = nn.Linear(heads * self.head_dim, embed_size)
 
-    def forward(self, x_embedded, mask):
-        N = x.shape[0]
-        seq_len = x.shape[1]
+    def forward(self, x_embedded: torch.Tensor, mask: torch.Tensor):
+        N = x_embedded.shape[0]
+        seq_len = x_embedded.shape[1]
 
         values = self.values(x_embedded)
         keys = self.keys(x_embedded)
@@ -101,8 +98,9 @@ class MultiHeadAttention(nn.Module):
         
         energy = torch.einsum("nqhd,nkhd->nhqk", [queries, keys])
 
-        if mask is not None:
-            energy = energy.masked_fill(mask == 0, float("-1e20"))
+        energy = energy.masked_fill(
+            mask.unsqueeze(1).unsqueeze(1) == 0, float("-1e20")
+        )
 
         attention = torch.softmax(energy / (self.embed_size ** (1 / 2)), dim=3)
 
@@ -114,10 +112,8 @@ class MultiHeadAttention(nn.Module):
 
 
 if __name__ == "__main__":
-    m = MultiHeadAttention(12, 3)
-    x = torch.randn((50, 20, 12))
-    m(x, None).shape
-    
-    t = Transformer(100, 12, 1, 4, 3)
-    x = torch.randint(0, 100, (50, 20))
-    t(x).shape
+    transformer = Transformer(
+        4000, 5, 256, 128
+    )
+    inputs, masks = torch.randint(0, 100, (10, 256)), torch.randint(0, 1, (10, 256))
+    transformer(inputs, masks).shape
