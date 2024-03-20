@@ -1,46 +1,44 @@
 import os 
-import re
-import string
 from tqdm import tqdm
+from transformers import BertTokenizer
 from src.data.reddit import RedditClient
+from src.data.utils import lower_text_and_remove_all_non_asci
 
 client_id = os.environ["PRAW_CLIENT_ID"]
 client_secret = os.environ["PRAW_CLIENT_SECRET"] 
 user_agent = os.environ["PRAW_USER_AGENT"]
+
 reddit_client = RedditClient(client_id, client_secret, user_agent)
 
-def clean_comment(comment):
-    emoji_pattern = re.compile("["
-                               u"\U0001F600-\U0001F64F"  # emoticons
-                               u"\U0001F300-\U0001F5FF"  # symbols & pictographs
-                               u"\U0001F680-\U0001F6FF"  # transport & map symbols
-                               u"\U0001F700-\U0001F77F"  # alchemical symbols
-                               u"\U0001F780-\U0001F7FF"  # Geometric Shapes Extended
-                               u"\U0001F800-\U0001F8FF"  # Supplemental Arrows-C
-                               u"\U0001F900-\U0001F9FF"  # Supplemental Symbols and Pictographs
-                               u"\U0001FA00-\U0001FA6F"  # Chess Symbols
-                               u"\U0001FA70-\U0001FAFF"  # Symbols and Pictographs Extended-A
-                               u"\U00002702-\U000027B0"  # Dingbats
-                               u"\U000024C2-\U0001F251"  # Enclosed characters
-                               "]+", flags=re.UNICODE)
-
-    comment_text = comment.lower().strip()
-    comment_text = re.sub(f"[{re.escape(string.punctuation)}]", '', comment_text)
-    comment_text = re.sub("\n", " ", comment_text)
-    comment_text = emoji_pattern.sub("", comment_text).strip()
-    comment_text = re.sub(r"\w*emote\w*", "", comment_text).strip()
-    comment_text = re.sub(r'\b\w{31,}\b', "", comment_text)
-    return comment_text
-
 query = {"wallstreetbets": "Daily Discussion"}
+num_submissions = 5
+num_comments = 300
 
 for subreddit_name in query:
     submissions = reddit_client.get_subreddit_submissions_by_key(
-        subreddit_name, query[subreddit_name], num_submissions=2
+        subreddit_name, query[subreddit_name], num_submissions=num_submissions
     )
     for submission in tqdm(submissions):
-        comments = submission.comments.list()[: 50]
-        for comment in comments:
-            comment_text = clean_comment(comment.body)
-            with open("data/wsb.txt", "a") as write:
-                _ = write.write(comment_text + "\n")
+        _ = submission.comments.replace_more(limit=0)
+        with open("data/wsb.txt", "a") as af:
+            for comment in submission.comments.list()[: num_comments]:
+                _ = af.write(
+                    lower_text_and_remove_all_non_asci(comment.body) + "\n"
+                )
+
+with open("data/wsb.txt", "r") as af:
+    wsb = af.readlines()
+
+tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+
+encoded_inputs = tokenizer(
+    wsb, padding=True, truncation=True, max_length=256, return_tensors="pt"
+)
+
+enc = encoded_inputs["input_ids"][0]
+
+tokenizer.decode(enc)
+
+tokenizer.convert_ids_to_tokens([3681, 13334, 2102, 20915, 2015])
+
+tokenizer.decode(tokenizer.encode("wallstreetbets"))
