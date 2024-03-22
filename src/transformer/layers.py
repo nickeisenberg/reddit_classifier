@@ -63,9 +63,9 @@ class PositionalEncoding(nn.Module):
                 pe[pos, i + 1] = math.cos(pos / (10000 ** ((2 * (i + 1)) / embed_size)))
         self.pe = pe.unsqueeze(0)
 
-    def forward(self, x):
-        # x is the input sequence embedded
-        x = x + self.pe[:, :x.size(1)].detach()
+    def forward(self, x: torch.Tensor):
+        device = x.device.type
+        x = x + self.pe[:, :x.size(1)].detach().to(device)
         return x
 
 
@@ -116,4 +116,4 @@ if __name__ == "__main__":
         4000, 5, 256, 128
     )
     inputs, masks = torch.randint(0, 100, (10, 256)), torch.randint(0, 1, (10, 256))
-    transformer(inputs, masks).shape
+    transformer.cuda()(inputs.cuda(), masks.cuda()).shape

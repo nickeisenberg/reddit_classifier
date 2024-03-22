@@ -55,7 +55,7 @@ def epoch_pass(which: str,
 
     running_loss = 0.0
     pbar = tqdm(loader)
-    for batch_id, loader_item in pbar:
+    for batch_id, loader_item in enumerate(pbar):
         inputs, targets = unpacker(loader_item, device)
 
         if which == "train":

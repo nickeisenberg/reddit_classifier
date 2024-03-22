@@ -7,7 +7,7 @@ from transformers import BertTokenizer
 class TextFolderWithBertTokenizer(Dataset):
     def __init__(self, root_dir, max_length=256):
         self.root_dir = root_dir
-        self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+        self.tokenizer: BertTokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
         self.max_length = max_length
         self.txt_file_names, self.labels, self.label_ids = self._load_files(
             self.root_dir
