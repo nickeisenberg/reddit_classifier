@@ -67,9 +67,12 @@ def epoch_pass(which: str,
             loss = validation_batch_pass(model, inputs, targets, loss_fn)
             running_loss += loss.item()
 
+        else:
+            raise Exception("")
+
         avg_loss = trunc(running_loss / (batch_id + 1) * 100) / 100
         display = { f"EPOCH_{epoch}_AVG_{which}_LOSS": avg_loss }
-        pbar.set_postfix(**display)
+        pbar.set_postfix(ordered_dict=None, refresh=True, **display)
 
 
 def train_batch_pass(model: Module,

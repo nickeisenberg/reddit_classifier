@@ -6,7 +6,7 @@ from src.transformer.layers import Transformer
 from src.data.dataset import TextFolderWithBertTokenizer
 from src.data.utils import transformer_unpacker
 
-num_epochs = 100
+num_epochs = 10
 
 device = "cuda:0"
 
