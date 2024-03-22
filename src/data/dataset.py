@@ -4,7 +4,7 @@ import os
 from transformers import BertTokenizer
 
 
-class TextFolderDatasetWithBertTokenizer(Dataset):
+class TextFolderWithBertTokenizer(Dataset):
     def __init__(self, root_dir, max_length=256):
         self.root_dir = root_dir
         self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
