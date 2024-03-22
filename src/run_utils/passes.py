@@ -8,15 +8,39 @@ from torch.optim import Optimizer
 from torch.utils.data import DataLoader
 
 
-def experiment(which: str,
-               epoch: int,
+def experiment(num_epochs: int,
                model: Module,
-               loader: DataLoader,
-               unpacker: Callable,
                device: str,
-               loss_fn: Module,
-               optimizer: Optimizer | None = None):
-    pass
+               train_loader: DataLoader,
+               train_unpacker: Callable,
+               train_loss_fn: Module,
+               optimizer: Optimizer,
+               validation_loader: DataLoader | None = None,
+               validation_unpacker: Callable | None = None,
+               validation_loss_fn: Module | None = None):
+
+    model.to(device)
+
+    for epoch in range(num_epochs):
+        epoch_pass(which="train",
+                   epoch=epoch,
+                   model=model,
+                   loader=train_loader,
+                   unpacker=train_unpacker,
+                   device=device,
+                   loss_fn=train_loss_fn,
+                   optimizer=optimizer)
+
+        if not validation_loader is None:
+            assert validation_unpacker is not None
+            assert validation_loss_fn is not None
+            epoch_pass(which="validation",
+                       epoch=epoch,
+                       model=model,
+                       loader=validation_loader,
+                       unpacker=validation_unpacker,
+                       device=device,
+                       loss_fn=validation_loss_fn)
 
 
 def epoch_pass(which: str,
