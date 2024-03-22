@@ -1,4 +1,4 @@
-from typing import Callable, Unpack
+from typing import Callable
 from tqdm import tqdm
 from math import trunc
 from torch import no_grad
@@ -93,13 +93,3 @@ def validation_batch_pass(model: Module,
         outputs = model(inputs) if isinstance(inputs, Tensor) else model(*inputs)
     loss: Tensor = loss_fn(outputs, targets)
     return loss
-
-
-def default_unpacker(loader_item: tuple, device):
-    inputs, class_id = loader_item
-    return inputs.to(device), class_id.to(device)
-
-
-def transformer_unpacker(loader_item: tuple, device):
-    inputs, masks, class_id = loader_item
-    return [inputs.to(device), masks.to(device)], class_id.to(device)
