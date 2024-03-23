@@ -1,3 +1,4 @@
+from typing import cast
 import torch
 from torch.utils.data import Dataset
 import os
@@ -5,12 +6,13 @@ from transformers import BertTokenizer
 
 
 class TextFolderWithBertTokenizer(Dataset):
-    def __init__(self, root_dir, max_length=256):
+    def __init__(self, root_dir: str, instructions: dict, max_length: int = 256):
         self.root_dir = root_dir
+        self.instructions = instructions
         self.tokenizer: BertTokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
         self.max_length = max_length
         self.txt_file_names, self.labels, self.label_ids = self._load_files(
-            self.root_dir
+            self.root_dir, instructions
         )
 
 
@@ -32,18 +34,31 @@ class TextFolderWithBertTokenizer(Dataset):
             return_tensors="pt"
         )
 
+        input_ids = cast(torch.Tensor, input["input_ids"])
+        input_masks = cast(torch.Tensor, input["attention_mask"])
+
         label = self.label_ids[self.labels[idx]]
 
-        return input["input_ids"].reshape(-1), input["attention_mask"].reshape(-1), label
+        return torch.flatten(input_ids), torch.flatten(input_masks), label
 
         
     @staticmethod
-    def _load_files(root_dir):
+    def _load_files(root_dir: str, instructions: dict):
         txt_file_names = []
         labels = []
         label_ids = {}
         for label_name in os.listdir(root_dir):
-            class_dir = os.path.join(root_dir, label_name)
+
+            if label_name in instructions:
+                if instructions[label_name] == 'ignore':
+                    continue
+                else:
+                    label_name, og_label_name = instructions[label_name], label_name
+
+            else:
+                og_label_name = label_name
+
+            class_dir = os.path.join(root_dir, og_label_name)
             for root, _, files in os.walk(class_dir):
                 for file in files:
                     if file.endswith(".txt"):
@@ -55,3 +70,17 @@ class TextFolderWithBertTokenizer(Dataset):
                 label_ids[name] = torch.tensor(len(label_ids))
 
         return txt_file_names, labels, label_ids
+
+
+if __name__ == "__main__":
+    dataset = TextFolderWithBertTokenizer(
+        "data", 
+       {
+            "movies": "ignore",
+            "CryptoCurrency": "stocks",
+            "wallstreetbets": "stocks",
+            "formula1": "sports",
+            "soccer": "sports"
+       }
+    )
+    dataset.label_ids
