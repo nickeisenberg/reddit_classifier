@@ -1,9 +1,56 @@
 import re
+import os
 import string
-import praw
+from tqdm import tqdm
 
+from praw import Reddit
+from praw.models import Comment
 from praw.reddit import Comment, Submission, Subreddit
 from collections.abc import Iterator
+
+
+def make_reddit_comment_dataset(client_id: str, 
+                                client_secret: str, 
+                                user_agent: str, 
+                                searches: dict[str, str],
+                                num_submissions_per_search: int,
+                                num_comments_per_submission: int,
+                                save_root: str):
+    reddit_client = RedditClient(client_id, client_secret, user_agent)
+
+    for subreddit_name in searches:
+        os.makedirs(os.path.join(save_root, subreddit_name))
+
+        print(f"Fetching submissions for {subreddit_name}")
+        submissions = reddit_client.get_submissions_by_subreddit_search(
+            subreddit_name, searches[subreddit_name], num_submissions_per_search
+        )
+
+        pbar = tqdm(submissions)        
+        for i, submission in enumerate(pbar):
+            pbar.set_postfix(
+                sub_num=f"{i + 1}/{num_submissions_per_search}", 
+                com_num=f"fetching"
+            )
+
+            _ = submission.comments.replace_more(limit=0)
+            comments: list[Comment] = submission.comments.list()[: num_comments_per_submission]
+
+            for j, comment in enumerate(comments):
+                pbar.set_postfix(
+                    sub_num=f"{i + 1}/{num_submissions_per_search}", 
+                    com_num=f"{j + 1} / {len(comments)}"
+                )
+
+                clean_comment_body = lower_text_and_remove_all_non_asci(comment.body)
+
+                save_to = os.path.join(
+                    save_root, 
+                    subreddit_name, 
+                    f"{submission.id}_{comment.id}.txt"
+                )
+                with open(save_to, "a") as af:
+                    af.write(clean_comment_body)
 
 
 class RedditClient:
@@ -21,10 +68,14 @@ class RedditClient:
                                            num_submissions: int,
                                            sort: str = "revelance") -> list[Submission]:
 
-        subreddit = self._reddit.subreddit(subreddit_name)
+        subreddit: Subreddit = self._reddit.subreddit(subreddit_name)
         submissions:Iterator[Submission] = subreddit.search(search, sort=sort)
 
         return [*submissions][: num_submissions]
+
+
+    def get_submissions_by_id(self, submission_ids: list[str]) -> list[Submission]:
+        return [self._reddit.submission(id) for id in submission_ids]
 
 
 def remove_emojis_by_type(comment):
@@ -143,7 +194,20 @@ def _get_replies_of_comment(submission_list: list[Subreddit],
 
 
 def _get_reddit(client_id: str, client_secret: str, user_agent: str):
-    return praw.Reddit(
+    return Reddit(
         client_id=client_id,
         client_secret=client_secret,
         user_agent=user_agent)
+
+if __name__ == "__main__":
+    import os
+    
+    x = Reddit(
+        client_id=os.environ["PRAW_CLIENT_ID"],
+        client_secret=os.environ["PRAW_CLIENT_SECRET"],
+        user_agent=os.environ["PRAW_USER_AGENT"])
+    wsb: Subreddit = x.subreddit("wallstreetbets")
+    subs = wsb.search("Daily")
+    sub = list(subs)[0]
+    print(sub.id)
+    x.submission(sub.id)
