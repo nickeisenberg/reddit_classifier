@@ -8,15 +8,18 @@ from transformers import BertTokenizer
 class TextFolderWithBertTokenizer(Dataset):
     def __init__(self, root_dir: str, which: str, instructions: dict | None = None, 
                  max_length: int = 256):
+
         assert which in ["train", "val", "test"]
+
         self.root_dir = root_dir
         self.which = which
         self.instructions = instructions
         self.tokenizer: BertTokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
         self.max_length = max_length
-        self.txt_file_names, self.labels, self.label_ids = self._load_files(
+        self.txt_file_names, self.labels, self.label_to_id = self._load_files(
             self.root_dir, self.which, self.instructions
         )
+        self.id_to_label = {v: k for k, v in self.label_to_id.items()}
 
 
     def __len__(self):
@@ -40,16 +43,16 @@ class TextFolderWithBertTokenizer(Dataset):
         input_ids = cast(torch.Tensor, input["input_ids"])
         input_masks = cast(torch.Tensor, input["attention_mask"])
 
-        label = self.label_ids[self.labels[idx]]
+        label_id = self.label_to_id[self.labels[idx]]
 
-        return torch.flatten(input_ids), torch.flatten(input_masks), label
+        return torch.flatten(input_ids), torch.flatten(input_masks), label_id
 
         
     @staticmethod
     def _load_files(root_dir: str, which:str, instructions: dict | None = None):
         txt_file_names = []
         labels = []
-        label_ids = {}
+        label_to_id = {}
         for label_name in os.listdir(root_dir):
             
             if instructions:
@@ -71,15 +74,16 @@ class TextFolderWithBertTokenizer(Dataset):
                         txt_file_names.append(os.path.join(root, file))
 
         for name in labels:
-            if name not in label_ids:
-                label_ids[name] = torch.tensor(len(label_ids))
+            if name not in label_to_id:
+                label_to_id[name] = torch.tensor(len(label_to_id))
 
-        return txt_file_names, labels, label_ids
+        return txt_file_names, labels, label_to_id
 
 
 if __name__ == "__main__":
     dataset = TextFolderWithBertTokenizer(
         "data", 
+        "train",
        {
             "movies": "ignore",
             "CryptoCurrency": "stocks",
@@ -88,4 +92,4 @@ if __name__ == "__main__":
             "soccer": "sports"
        }
     )
-    dataset.label_ids
+    dataset.label_to_id
