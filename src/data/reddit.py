@@ -40,7 +40,7 @@ def make_reddit_comment_dataset(client_id: str,
         for i, submission in enumerate(pbar):
             if i < len(pbar) * train_val_test[0]:
                 which = "train"
-            elif i > len(pbar) * train_val_test[0] and i < len(pbar) * train_val_test[1]:
+            elif i > len(pbar) * train_val_test[0] and i < len(pbar) * sum(train_val_test[:2]):
                 which = "val"
             else:
                 which = "test"
