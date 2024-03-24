@@ -15,26 +15,22 @@ train_dataset = TextFolderWithBertTokenizer(
     "train",
     max_length=256
 )
-train_loader = DataLoader(train_dataset, batch_size=32)
+train_loader = DataLoader(train_dataset, batch_size=128)
 train_unpacker =transformer_unpacker
 train_loss_fn = CrossEntropyLoss()
 
-# validation_dataset = TextFolderWithBertTokenizer(
-#     os.path.join(os.getcwd(), "data"), 
-#     max_length=256
-# )
-# validation_loader = DataLoader(validation_dataset, batch_size=32)
-# validation_unpacker =transformer_unpacker
-# validation_loss_fn = CrossEntropyLoss()
-
-validation_dataset = None
-validation_loader = None
-validation_unpacker = None
-validation_loss_fn = None
+validation_dataset = TextFolderWithBertTokenizer(
+    os.path.join("data"),
+    "val",
+    max_length=256
+)
+validation_loader = DataLoader(validation_dataset, batch_size=128)
+validation_unpacker =transformer_unpacker
+validation_loss_fn = CrossEntropyLoss()
 
 model = Transformer(
     vocab_size=train_dataset.tokenizer.vocab_size, 
-    num_classes=5, 
+    num_classes=3, 
     max_length=256, 
     embed_size=64,
     num_layers=5, 
@@ -42,7 +38,7 @@ model = Transformer(
     heads=4,
 )
 
-optimizer = Adam(model.parameters(), lr=.0001)
+optimizer = Adam(model.parameters(), lr=.001)
 
 config = {
     "num_epochs": num_epochs,

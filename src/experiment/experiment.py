@@ -1,7 +1,8 @@
+import os
 from typing import Callable
 from tqdm import tqdm
 from math import trunc
-from torch import no_grad
+from torch import no_grad, save
 from torch import Tensor
 from torch.nn import Module
 from torch.optim import Optimizer
@@ -10,6 +11,7 @@ from torch.utils.data import DataLoader
 
 def experiment(num_epochs: int,
                model: Module,
+               save_best_model_to: str,
                device: str,
                train_loader: DataLoader,
                train_unpacker: Callable,
@@ -20,10 +22,12 @@ def experiment(num_epochs: int,
                validation_loss_fn: Module | None = None):
 
     model.to(device)
+
+    best_avg_val_loss = 1e6
     
     for epoch in range(num_epochs):
         model.train()
-        epoch_pass(which="train",
+        _ = epoch_pass(which="train",
                    epoch=epoch,
                    model=model,
                    loader=train_loader,
@@ -32,17 +36,31 @@ def experiment(num_epochs: int,
                    loss_fn=train_loss_fn,
                    optimizer=optimizer)
 
+        overfitted_file_name = f"overfitten.pth"
+        save(
+            model.state_dict(), 
+            os.path.join(os.path.split(__file__)[0], overfitted_file_name)
+        )
+
         model.eval()
         if not validation_loader is None:
             assert validation_unpacker is not None
             assert validation_loss_fn is not None
-            epoch_pass(which="validation",
+            avg_val_loss = epoch_pass(which="validation",
                        epoch=epoch,
                        model=model,
                        loader=validation_loader,
                        unpacker=validation_unpacker,
                        device=device,
                        loss_fn=validation_loss_fn)
+
+            if avg_val_loss < best_avg_val_loss:
+                best_avg_val_loss = avg_val_loss
+                best_file_name = f"val_ep{epoch}.pth"
+                save(
+                    model.state_dict(), 
+                    os.path.join(os.path.split(__file__)[0], best_file_name)
+                )
 
 
 def epoch_pass(which: str,
@@ -75,6 +93,8 @@ def epoch_pass(which: str,
         avg_loss = trunc(running_loss / (batch_id + 1) * 100) / 100
         display = { f"EPOCH_{epoch}_AVG_{which}_LOSS": avg_loss }
         pbar.set_postfix(ordered_dict=None, refresh=True, **display)
+
+    return running_loss / len(loader) 
 
 
 def train_batch_pass(model: Module,
