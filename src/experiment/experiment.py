@@ -20,8 +20,9 @@ def experiment(num_epochs: int,
                validation_loss_fn: Module | None = None):
 
     model.to(device)
-
+    
     for epoch in range(num_epochs):
+        model.train()
         epoch_pass(which="train",
                    epoch=epoch,
                    model=model,
@@ -31,6 +32,7 @@ def experiment(num_epochs: int,
                    loss_fn=train_loss_fn,
                    optimizer=optimizer)
 
+        model.eval()
         if not validation_loader is None:
             assert validation_unpacker is not None
             assert validation_loss_fn is not None
