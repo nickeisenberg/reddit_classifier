@@ -11,7 +11,7 @@ from torch.utils.data import DataLoader
 
 def experiment(num_epochs: int,
                model: Module,
-               save_best_model_to: str,
+               save_root: str,
                device: str,
                train_loader: DataLoader,
                train_unpacker: Callable,
@@ -25,7 +25,7 @@ def experiment(num_epochs: int,
 
     best_avg_val_loss = 1e6
     
-    for epoch in range(num_epochs):
+    for epoch in range(1, num_epochs + 1):
         model.train()
         _ = epoch_pass(which="train",
                    epoch=epoch,
@@ -36,10 +36,10 @@ def experiment(num_epochs: int,
                    loss_fn=train_loss_fn,
                    optimizer=optimizer)
 
-        overfitted_file_name = f"overfitten.pth"
+        overfitted_file_name = f"overfitted.pth"
         save(
             model.state_dict(), 
-            os.path.join(os.path.split(__file__)[0], overfitted_file_name)
+            os.path.join(save_root, overfitted_file_name)
         )
 
         model.eval()
@@ -59,7 +59,7 @@ def experiment(num_epochs: int,
                 best_file_name = f"val_ep{epoch}.pth"
                 save(
                     model.state_dict(), 
-                    os.path.join(os.path.split(__file__)[0], best_file_name)
+                    os.path.join(save_root, best_file_name)
                 )
 
 

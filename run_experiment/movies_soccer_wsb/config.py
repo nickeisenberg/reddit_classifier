@@ -6,32 +6,34 @@ from src.transformer.layers import Transformer
 from src.data.dataset import TextFolderWithBertTokenizer
 from src.data.utils import transformer_unpacker
 
-num_epochs = 10
+num_epochs = 2
 
 device = "cuda:0"
+
+max_length=256
 
 train_dataset = TextFolderWithBertTokenizer(
     os.path.join("data"),
     "train",
-    max_length=256
+    max_length=max_length
 )
-train_loader = DataLoader(train_dataset, batch_size=128)
+train_loader = DataLoader(train_dataset, batch_size=128, shuffle=True)
 train_unpacker =transformer_unpacker
 train_loss_fn = CrossEntropyLoss()
 
 validation_dataset = TextFolderWithBertTokenizer(
     os.path.join("data"),
     "val",
-    max_length=256
+    max_length=max_length
 )
-validation_loader = DataLoader(validation_dataset, batch_size=128)
+validation_loader = DataLoader(validation_dataset, batch_size=128, shuffle=True)
 validation_unpacker =transformer_unpacker
 validation_loss_fn = CrossEntropyLoss()
 
 model = Transformer(
     vocab_size=train_dataset.tokenizer.vocab_size, 
     num_classes=3, 
-    max_length=256, 
+    max_length=max_length, 
     embed_size=64,
     num_layers=5, 
     forward_expansion=4,
