@@ -1,5 +1,7 @@
 import os 
-from src.data.make import make_reddit_comment_dataset
+from sys import path
+path.append(os.getcwd())
+from src.data.reddit import make_reddit_comment_dataset
 
 
 if __name__ == "__main__":
@@ -9,18 +11,19 @@ if __name__ == "__main__":
     
     searches = {
         "wallstreetbets": "Daily Discussion Thread",
-        "CryptoCurrency": "Daily Crypto Discussion",
+        # "CryptoCurrency": "Daily Crypto Discussion",
         "soccer": "Daily Discussion",
         "movies": "Official Discussion",
-        "formula1": "Daily Discussion",
+        # "formula1": "Daily Discussion",
     }
     
     make_reddit_comment_dataset(
         client_id, 
         client_secret, 
-        user_agent,
+        user_agent, 
         searches,
-        1,
         100,
+        100,
+        (.7, .2, .1),
         "data"
     )

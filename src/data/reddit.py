@@ -1,7 +1,9 @@
 import re
 import os
 import string
+
 from tqdm import tqdm
+from random import seed, shuffle
 
 from praw import Reddit
 from praw.models import Comment
@@ -15,28 +17,43 @@ def make_reddit_comment_dataset(client_id: str,
                                 searches: dict[str, str],
                                 num_submissions_per_search: int,
                                 num_comments_per_submission: int,
+                                train_val_test: tuple,
                                 save_root: str):
+
+    assert sum([int(x * 10) for x in train_val_test])
     reddit_client = RedditClient(client_id, client_secret, user_agent)
 
     for subreddit_name in searches:
-        os.makedirs(os.path.join(save_root, subreddit_name))
+        os.makedirs(os.path.join(save_root, subreddit_name, "train"))
+        os.makedirs(os.path.join(save_root, subreddit_name, "val"))
+        os.makedirs(os.path.join(save_root, subreddit_name, "test"))
 
         print(f"Fetching submissions for {subreddit_name}")
         submissions = reddit_client.get_submissions_by_subreddit_search(
             subreddit_name, searches[subreddit_name], num_submissions_per_search
         )
 
+        seed(1)
+        shuffle(submissions)
+
         pbar = tqdm(submissions)        
         for i, submission in enumerate(pbar):
+            if i < len(pbar) * train_val_test[0]:
+                which = "train"
+            elif i > len(pbar) * train_val_test[0] and i < len(pbar) * train_val_test[1]:
+                which = "val"
+            else:
+                which = "test"
+
             pbar.set_postfix(
                 sub_num=f"{i + 1}/{num_submissions_per_search}", 
                 com_num=f"fetching"
             )
 
             _ = submission.comments.replace_more(limit=0)
-            comments: list[Comment] = submission.comments.list()[: num_comments_per_submission]
+            comments: list[Comment] = submission.comments.list()
 
-            for j, comment in enumerate(comments):
+            for j, comment in enumerate(comments[: num_comments_per_submission]):
                 pbar.set_postfix(
                     sub_num=f"{i + 1}/{num_submissions_per_search}", 
                     com_num=f"{j + 1} / {len(comments)}"
@@ -47,10 +64,45 @@ def make_reddit_comment_dataset(client_id: str,
                 save_to = os.path.join(
                     save_root, 
                     subreddit_name, 
+                    which,
                     f"{submission.id}_{comment.id}.txt"
                 )
                 with open(save_to, "a") as af:
                     af.write(clean_comment_body)
+
+
+def get_comments_from_submission_id_list(reddit: Reddit,
+                                         submission_ids: list[str],
+                                         num_comments_per_submission: int,
+                                         save_root: str):
+
+    os.makedirs(save_root)
+
+    pbar = tqdm(submission_ids)        
+    for i, submission_id in enumerate(pbar):
+        pbar.set_postfix(
+            sub_num=f"{i + 1}/{len(submission_ids)}", 
+            com_num=f"fetching"
+        )
+
+        submission: Submission = reddit.submission(submission_id)
+        _ = submission.comments.replace_more(limit=0)
+        comments: list[Comment] = submission.comments.list()
+
+        for j, comment in enumerate(comments[: num_comments_per_submission]):
+            pbar.set_postfix(
+                sub_num=f"{i + 1}/{len(submission_ids)}", 
+                com_num=f"{j + 1} / {len(comments)}"
+            )
+
+            clean_comment_body = lower_text_and_remove_all_non_asci(comment.body)
+
+            save_to = os.path.join(
+                save_root, 
+                f"{submission.id}_{comment.id}.txt"
+            )
+            with open(save_to, "a") as af:
+                af.write(clean_comment_body)
 
 
 class RedditClient:
