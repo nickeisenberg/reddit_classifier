@@ -11,7 +11,8 @@ num_epochs = 10
 device = "cuda:0"
 
 train_dataset = TextFolderWithBertTokenizer(
-    os.path.join(os.getcwd(), "data"), 
+    os.path.join("data"),
+    "train",
     max_length=256
 )
 train_loader = DataLoader(train_dataset, batch_size=32)
