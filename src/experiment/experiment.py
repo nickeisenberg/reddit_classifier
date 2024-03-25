@@ -1,4 +1,5 @@
 import os
+import numpy as np
 from typing import Callable
 from tqdm import tqdm
 from math import trunc
@@ -7,8 +8,6 @@ from torch import Tensor
 from torch.nn import Module
 from torch.optim import Optimizer
 from torch.utils.data import DataLoader
-
-from ..metrics.conf_mat import confusion_matrix
 
 
 def experiment(num_epochs: int,
@@ -21,7 +20,8 @@ def experiment(num_epochs: int,
                optimizer: Optimizer,
                validation_loader: DataLoader | None = None,
                validation_unpacker: Callable | None = None,
-               validation_loss_fn: Module | None = None):
+               validation_loss_fn: Module | None = None,
+               validation_metric: Callable | None = None):
 
     model.to(device)
 
@@ -49,7 +49,7 @@ def experiment(num_epochs: int,
             assert validation_unpacker is not None
             assert validation_loss_fn is not None
 
-            avg_val_loss = validation_epoch_pass(
+            avg_val_loss, targets, predictions = validation_epoch_pass(
                 validation_batch_pass=validation_batch_pass,
                 epoch=epoch,
                 model=model,
@@ -66,6 +66,14 @@ def experiment(num_epochs: int,
                     model.state_dict(), 
                     os.path.join(save_root, best_file_name)
                 )
+                
+                if validation_metric is not None:
+                    metric_file_name = f"EPOCH_{epoch}_metric.png"
+                    validation_metric(
+                        targets=targets, 
+                        predictions=predictions, 
+                        save_to=os.path.join(save_root, metric_file_name)
+                    )
 
 
 def train_epoch_pass(train_batch_pass: Callable,
@@ -78,15 +86,26 @@ def train_epoch_pass(train_batch_pass: Callable,
                      optimizer: Optimizer | None = None):
 
     running_loss = 0.0
+    all_targets, all_predictions = [], []
+
     pbar = tqdm(loader)
     for batch_id, loader_item in enumerate(pbar):
         inputs, targets = unpacker(loader_item, device)
 
-        loss = train_batch_pass(model, inputs, targets, optimizer, loss_fn)
+        loss, predictions = train_batch_pass(model, inputs, targets, optimizer, loss_fn)
         running_loss += loss.item()
 
+        all_targets += targets
+        all_predictions += predictions
+
+        accuracy = (np.array(all_targets) == np.array(all_predictions)).sum()
+        accuracy = np.round(accuracy / len(all_predictions) * 100, 2)
+
         avg_loss = trunc(running_loss / (batch_id + 1) * 100) / 100
-        display = { f"EPOCH_{epoch}_AVG_TRAIN_LOSS": avg_loss }
+        display = {
+            f"EPOCH_{epoch}_AVG_TRAIN_LOSS": avg_loss,
+            f"EPOCH_{epoch}_TRAIN_ACCURACY": accuracy,
+        }
         pbar.set_postfix(ordered_dict=None, refresh=True, **display)
 
     return running_loss / len(loader) 
@@ -102,7 +121,7 @@ def train_batch_pass(model: Module,
     loss: Tensor = loss_fn(outputs, targets)
     loss.backward()
     optimizer.step()
-    return loss
+    return loss, outputs.detach().tolist()
 
 
 def validation_epoch_pass(validation_batch_pass: Callable,
@@ -111,12 +130,12 @@ def validation_epoch_pass(validation_batch_pass: Callable,
                           loader: DataLoader,
                           unpacker: Callable,
                           device: str,
-                          loss_fn: Module,
-                          metrics: list[Callable]):
+                          loss_fn: Module):
 
     running_loss = 0.0
-    pbar = tqdm(loader)
     all_targets, all_predictions = [], []
+
+    pbar = tqdm(loader)
     for batch_id, loader_item in enumerate(pbar):
         inputs, targets = unpacker(loader_item, device)
 
@@ -124,19 +143,22 @@ def validation_epoch_pass(validation_batch_pass: Callable,
             model, inputs, targets, loss_fn
         )
 
-        all_targets.append(targets)
-        all_predictions.append(predictions)
+        all_targets += targets
+        all_predictions += predictions
+        
+        accuracy = (np.array(all_targets) == np.array(all_predictions)).sum()
+        accuracy = np.round(accuracy / len(all_predictions) * 100, 2)
 
         running_loss += loss.item()
 
         avg_loss = trunc(running_loss / (batch_id + 1) * 100) / 100
-        display = { f"EPOCH_{epoch}_AVG_VAL_LOSS": avg_loss }
+        display = {
+            f"EPOCH_{epoch}_AVG_VAL_LOSS": avg_loss,
+            f"EPOCH_{epoch}_VAL_ACCURACY": accuracy,
+        }
         pbar.set_postfix(ordered_dict=None, refresh=True, **display)
-    
-    for metric in metrics:
-        metric(all_targets, all_predictions)
 
-    return running_loss / len(loader) 
+    return running_loss / len(loader), all_targets, all_predictions 
 
 
 def validation_batch_pass(model: Module,
@@ -147,7 +169,3 @@ def validation_batch_pass(model: Module,
         outputs: Tensor = model(inputs) if isinstance(inputs, Tensor) else model(*inputs)
     loss: Tensor = loss_fn(outputs, targets)
     return loss, outputs.detach().tolist()
-
-
-
-

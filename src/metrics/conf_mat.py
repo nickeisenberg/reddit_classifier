@@ -4,15 +4,17 @@ from matplotlib import colormaps
 import matplotlib.pyplot as plt
 
 
-def confusion_matrix(targets, predictions, labels, save_to):
-    matrix = compute_confusion_matrix(targets, predictions)
-    fig = make_confusion_matrix_fig(matrix, labels)
-    fig.savefig(save_to)
-    return None
-
 class ConfusionMatrix:
-    def __init__(self, save_to, labels):
-        pass
+    def __init__(self, labels):
+        self.labels = labels
+
+
+    def run(self, targets, predictions, save_to):
+        matrix = self.compute_confusion_matrix(targets, predictions)
+        fig = self.make_confusion_matrix_fig(matrix, self.labels)
+        fig.savefig(save_to)
+        return None
+
     
     @staticmethod
     def compute_confusion_matrix(targets, predictions):
@@ -75,6 +77,13 @@ class ConfusionMatrix:
         return fig
 
 
+def confusion_matrix(targets, predictions, labels, save_to):
+    matrix = compute_confusion_matrix(targets, predictions)
+    fig = make_confusion_matrix_fig(matrix, labels)
+    fig.savefig(save_to)
+    return None
+
+
 def compute_confusion_matrix(targets, predictions):
     """
     Compute a confusion matrix for multi-class classification.
@@ -134,3 +143,12 @@ def make_confusion_matrix_fig(matrix, class_names) -> Figure:
 
     return fig
 
+
+if __name__ == "__main__":
+    conf_mat = ConfusionMatrix(np.arange(3))
+    
+    conf_mat.run(
+       np.random.randint(0, 2, 10),
+        np.random.randint(0, 2, 10),
+        "confmat.png"
+    )
