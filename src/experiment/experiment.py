@@ -14,10 +14,11 @@ def experiment(num_epochs: int,
                model: Module,
                save_root: str,
                device: str,
+               optimizer: Optimizer,
                train_loader: DataLoader,
                train_unpacker: Callable,
                train_loss_fn: Module,
-               optimizer: Optimizer,
+               train_metric: Callable | None = None,
                validation_loader: DataLoader | None = None,
                validation_unpacker: Callable | None = None,
                validation_loss_fn: Module | None = None,
@@ -29,20 +30,29 @@ def experiment(num_epochs: int,
     
     for epoch in range(1, num_epochs + 1):
         model.train()
-        _ = train_epoch_pass(train_batch_pass=train_batch_pass,
-                             epoch=epoch,
-                             model=model,
-                             loader=train_loader,
-                             unpacker=train_unpacker,
-                             device=device,
-                             loss_fn=train_loss_fn,
-                             optimizer=optimizer)
+        _, targets, predictions = train_epoch_pass(
+            train_batch_pass=train_batch_pass,
+            epoch=epoch,
+            model=model,
+            loader=train_loader,
+            unpacker=train_unpacker,
+            device=device,
+            loss_fn=train_loss_fn,
+            optimizer=optimizer
+        )
 
         overfitted_file_name = f"overfitted.pth"
         save(
             model.state_dict(), 
             os.path.join(save_root, overfitted_file_name)
         )
+        if train_metric is not None:
+            metric_file_name = f"train_metric.png"
+            train_metric(
+                targets=targets, 
+                predictions=predictions, 
+                save_to=os.path.join(save_root, metric_file_name)
+            )
 
         model.eval()
         if not validation_loader is None:
@@ -68,7 +78,7 @@ def experiment(num_epochs: int,
                 )
                 
                 if validation_metric is not None:
-                    metric_file_name = f"EPOCH_{epoch}_metric.png"
+                    metric_file_name = f"EPOCH_{epoch}_val_metric.png"
                     validation_metric(
                         targets=targets, 
                         predictions=predictions, 
@@ -92,7 +102,9 @@ def train_epoch_pass(train_batch_pass: Callable,
     for batch_id, loader_item in enumerate(pbar):
         inputs, targets = unpacker(loader_item, device)
 
-        loss, predictions = train_batch_pass(model, inputs, targets, optimizer, loss_fn)
+        loss, predictions = train_batch_pass(
+            model, inputs, targets, optimizer, loss_fn
+        )
         running_loss += loss.item()
 
         all_targets += targets
@@ -108,7 +120,7 @@ def train_epoch_pass(train_batch_pass: Callable,
         }
         pbar.set_postfix(ordered_dict=None, refresh=True, **display)
 
-    return running_loss / len(loader) 
+    return running_loss / len(loader), all_targets, all_predictions
 
 
 def train_batch_pass(model: Module,
@@ -142,14 +154,13 @@ def validation_epoch_pass(validation_batch_pass: Callable,
         loss, predictions = validation_batch_pass(
             model, inputs, targets, loss_fn
         )
+        running_loss += loss.item()
 
         all_targets += targets
         all_predictions += predictions
         
         accuracy = (np.array(all_targets) == np.array(all_predictions)).sum()
         accuracy = np.round(accuracy / len(all_predictions) * 100, 2)
-
-        running_loss += loss.item()
 
         avg_loss = trunc(running_loss / (batch_id + 1) * 100) / 100
         display = {
