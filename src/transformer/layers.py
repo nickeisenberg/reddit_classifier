@@ -88,9 +88,9 @@ class MultiHeadAttention(nn.Module):
         N = x_embedded.shape[0]
         seq_len = x_embedded.shape[1]
 
-        values = self.values(x_embedded)
-        keys = self.keys(x_embedded)
         queries = self.queries(x_embedded)
+        keys = self.keys(x_embedded)
+        values = self.values(x_embedded)
 
         queries = queries.reshape(N, seq_len, self.heads, self.head_dim)
         keys = keys.reshape(N, seq_len, self.heads, self.head_dim)
@@ -115,5 +115,21 @@ if __name__ == "__main__":
     transformer = Transformer(
         4000, 5, 256, 128
     )
-    inputs, masks = torch.randint(0, 100, (10, 256)), torch.randint(0, 1, (10, 256))
+    inputs, masks = torch.randint(3000, 3005, (10, 256)), torch.randint(0, 1, (10, 256))
     transformer.cuda()(inputs.cuda(), masks.cuda()).shape
+
+    vocab_size = 20
+    max_length = 10
+    emb_dim = 6
+    
+    emb = nn.Embedding(vocab_size, emb_dim)
+    pos_enc  = PositionalEncoding(emb_dim, max_length)
+    
+    x = torch.randint(0, vocab_size - 1, (1, max_length))
+    
+    x_emb = emb(x)
+    x_emb_enc = pos_enc(x_emb)
+    
+    x.shape
+    x_emb.shape
+    x_emb_enc.shape

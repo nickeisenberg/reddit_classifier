@@ -20,7 +20,8 @@ def make_reddit_comment_dataset(client_id: str,
                                 train_val_test: tuple,
                                 save_root: str):
 
-    assert sum([int(x * 10) for x in train_val_test])
+    assert sum([int(x * 10) for x in train_val_test]) == 10
+
     reddit_client = RedditClient(client_id, client_secret, user_agent)
 
     for subreddit_name in searches:
