@@ -7,7 +7,8 @@ from transformers import BertTokenizer
 
 class TextFolderWithBertTokenizer(Dataset):
     def __init__(self, root_dir: str, which: str, instructions: dict | None = None, 
-                 max_length: int = 256):
+                 label_id_map: dict | None = None, max_length: int = 256):
+
 
         assert which in ["train", "val", "test"]
 
@@ -19,6 +20,10 @@ class TextFolderWithBertTokenizer(Dataset):
         self.txt_file_names, self.labels, self.label_to_id = self._load_files(
             self.root_dir, self.which, self.instructions
         )
+
+        if label_id_map is not None:
+            self.label_to_id = label_id_map
+
         self.id_to_label = {v: k for k, v in self.label_to_id.items()}
 
 
@@ -45,7 +50,7 @@ class TextFolderWithBertTokenizer(Dataset):
 
         label_id = self.label_to_id[self.labels[idx]]
 
-        return torch.flatten(input_ids), torch.flatten(input_masks), label_id
+        return torch.flatten(input_ids), torch.flatten(input_masks), torch.tensor(label_id)
 
         
     @staticmethod
@@ -75,7 +80,7 @@ class TextFolderWithBertTokenizer(Dataset):
 
         for name in labels:
             if name not in label_to_id:
-                label_to_id[name] = torch.tensor(len(label_to_id))
+                label_to_id[name] = len(label_to_id)
 
         return txt_file_names, labels, label_to_id
 

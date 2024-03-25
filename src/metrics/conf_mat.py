@@ -73,6 +73,7 @@ class ConfusionMatrix:
     
         plt.xlabel('Predicted')
         plt.ylabel('Actual')
+        plt.tight_layout()
     
         return fig
 
@@ -146,9 +147,11 @@ def make_confusion_matrix_fig(matrix, class_names) -> Figure:
 
 if __name__ == "__main__":
     conf_mat = ConfusionMatrix(np.arange(3))
-    
     conf_mat.run(
-       np.random.randint(0, 2, 10),
+        np.random.randint(0, 2, 10),
         np.random.randint(0, 2, 10),
         "confmat.png"
     )
+
+
+

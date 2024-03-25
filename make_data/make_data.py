@@ -10,11 +10,11 @@ if __name__ == "__main__":
     user_agent = os.environ["PRAW_USER_AGENT"]
     
     searches = {
-        "wallstreetbets": "Daily Discussion Thread",
-        # "CryptoCurrency": "Daily Crypto Discussion",
-        "soccer": "Daily Discussion",
-        "movies": "Official Discussion",
-        # "formula1": "Daily Discussion",
+        # "wallstreetbets": "Daily Discussion Thread",
+        "CryptoCurrency": "Daily Crypto Discussion",
+        # "soccer": "Daily Discussion",
+        # "movies": "Official Discussion",
+        "formula1": "Daily Discussion",
     }
     
     make_reddit_comment_dataset(

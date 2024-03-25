@@ -3,7 +3,7 @@ import numpy as np
 from typing import Callable
 from tqdm import tqdm
 from math import trunc
-from torch import no_grad, save
+from torch import no_grad, save, argmax
 from torch import Tensor
 from torch.nn import Module
 from torch.optim import Optimizer
@@ -27,6 +27,13 @@ def experiment(num_epochs: int,
     model.to(device)
 
     best_avg_val_loss = 1e6
+
+    os.makedirs(os.path.join(save_root, "outputs"))
+    save_root = os.path.join(save_root, "outputs")
+
+    os.makedirs(os.path.join(save_root, "state_dicts"))
+    os.makedirs(os.path.join(save_root, "metrics"))
+
     
     for epoch in range(1, num_epochs + 1):
         model.train()
@@ -44,14 +51,14 @@ def experiment(num_epochs: int,
         overfitted_file_name = f"overfitted.pth"
         save(
             model.state_dict(), 
-            os.path.join(save_root, overfitted_file_name)
+            os.path.join(save_root, "state_dicts", overfitted_file_name)
         )
         if train_metric is not None:
             metric_file_name = f"train_metric.png"
             train_metric(
                 targets=targets, 
                 predictions=predictions, 
-                save_to=os.path.join(save_root, metric_file_name)
+                save_to=os.path.join(save_root, "metrics", metric_file_name)
             )
 
         model.eval()
@@ -74,7 +81,7 @@ def experiment(num_epochs: int,
                 best_file_name = f"val_ep{epoch}.pth"
                 save(
                     model.state_dict(), 
-                    os.path.join(save_root, best_file_name)
+                    os.path.join(save_root, "state_dicts", best_file_name)
                 )
                 
                 if validation_metric is not None:
@@ -82,7 +89,7 @@ def experiment(num_epochs: int,
                     validation_metric(
                         targets=targets, 
                         predictions=predictions, 
-                        save_to=os.path.join(save_root, metric_file_name)
+                        save_to=os.path.join(save_root, "metrics", metric_file_name)
                     )
 
 
@@ -103,12 +110,12 @@ def train_epoch_pass(train_batch_pass: Callable,
         inputs, targets = unpacker(loader_item, device)
 
         loss, predictions = train_batch_pass(
-            model, inputs, targets, optimizer, loss_fn
+           model, inputs, targets, optimizer, loss_fn
         )
         running_loss += loss.item()
 
-        all_targets += targets
-        all_predictions += predictions
+        all_targets += targets.detach().tolist()
+        all_predictions += argmax(predictions, 1).detach().tolist()
 
         accuracy = (np.array(all_targets) == np.array(all_predictions)).sum()
         accuracy = np.round(accuracy / len(all_predictions) * 100, 2)
@@ -133,7 +140,7 @@ def train_batch_pass(model: Module,
     loss: Tensor = loss_fn(outputs, targets)
     loss.backward()
     optimizer.step()
-    return loss, outputs.detach().tolist()
+    return loss, outputs
 
 
 def validation_epoch_pass(validation_batch_pass: Callable,
@@ -156,8 +163,8 @@ def validation_epoch_pass(validation_batch_pass: Callable,
         )
         running_loss += loss.item()
 
-        all_targets += targets
-        all_predictions += predictions
+        all_targets += targets.detach().tolist()
+        all_predictions += argmax(predictions, 1).detach().tolist()
         
         accuracy = (np.array(all_targets) == np.array(all_predictions)).sum()
         accuracy = np.round(accuracy / len(all_predictions) * 100, 2)
@@ -179,4 +186,4 @@ def validation_batch_pass(model: Module,
     with no_grad():
         outputs: Tensor = model(inputs) if isinstance(inputs, Tensor) else model(*inputs)
     loss: Tensor = loss_fn(outputs, targets)
-    return loss, outputs.detach().tolist()
+    return loss, outputs

@@ -9,19 +9,15 @@ from src.metrics.conf_mat import ConfusionMatrix
 
 num_epochs = 5
 
+num_classes = 5
+
 device = "cuda:0"
 
 max_length=256
 
-instructions = {
-    "CryptoCurrency": "ignore",
-    "formula1": "ignore"
-}
-
 train_dataset = TextFolderWithBertTokenizer(
     "data",
     "train",
-    instructions=instructions,
     max_length=max_length
 )
 train_metric = ConfusionMatrix(
@@ -34,7 +30,6 @@ train_loss_fn = CrossEntropyLoss()
 validation_dataset = TextFolderWithBertTokenizer(
     os.path.join("data"),
     "val",
-    instructions=instructions,
     label_id_map=train_dataset.label_to_id,
     max_length=max_length
 )
@@ -47,7 +42,7 @@ validation_loss_fn = CrossEntropyLoss()
 
 model = Transformer(
     vocab_size=train_dataset.tokenizer.vocab_size, 
-    num_classes=3, 
+    num_classes=num_classes, 
     max_length=max_length, 
     embed_size=64,
     num_layers=5, 
