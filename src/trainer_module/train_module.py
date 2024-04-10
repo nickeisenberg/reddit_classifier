@@ -1,10 +1,12 @@
 import os
+import numpy as np
 from torch.nn import CrossEntropyLoss, Module
-from torch import Tensor, save, load, no_grad
+from torch import Tensor, argmax, save, load, no_grad
 from torch.optim import Adam
 from torch.nn import DataParallel
 
 from src.trainer.logger import CSVLogger
+from src.trainer.metrics import Accuracy
 
 class TrainModule(Module):
     def __init__(self,
@@ -32,6 +34,12 @@ class TrainModule(Module):
 
         self.epochs_run = 0
 
+        self.accuracy = Accuracy()
+
+
+    def metrics(self):
+        return [self.accuracy]
+
 
     def forward(self, x):
         return self.model(x)
@@ -49,7 +57,17 @@ class TrainModule(Module):
         loss.backward()
         self.optimizer.step()
 
-        self.logger.log_batch({"total_loss": loss.item()})
+        targets = targets.detach()
+        predictions = argmax(outputs, 1).detach()
+
+        self.accuracy.log(predictions, targets)
+
+        self.logger.log_batch(
+            {
+                "total_loss": loss.item(),
+                "accuracy": self.accuracy
+            }
+        )
 
 
     def val_batch_pass(self, *unpacked_loader_data):
@@ -62,7 +80,18 @@ class TrainModule(Module):
             outputs: Tensor = self.model(inputs, masks)
         loss: Tensor = self.loss_fn(outputs, targets)
 
-        self.logger.log_batch({"total_loss": loss.item()})
+
+        targets = targets.detach()
+        predictions = argmax(outputs, 1).detach()
+
+        self.accuracy.log(predictions, targets)
+
+        self.logger.log_batch(
+            {
+                "total_loss": loss.item(),
+                "accuracy": self.accuracy
+            }
+        )
 
 
     def save_checkpoint(self, which, epoch, save_to: str | None = None):

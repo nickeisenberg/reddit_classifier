@@ -1,12 +1,7 @@
 import torch.nn as nn
 from torch.utils.data import DataLoader
-from typing import Callable
+from typing import Any, Callable
 from tqdm import tqdm
-
-
-def default_unpacker(data, device):
-    data = [d.to(device) for d in data]
-    return data
 
 
 class Trainer:
@@ -18,13 +13,10 @@ class Trainer:
             train_loader: DataLoader,
             num_epochs: int,
             device: str | int,
-            unpacker: Callable | None = None,
+            unpacker: Callable,
+            metrics: bool = False,
             val_loader: DataLoader | None = None):
 
-        if not unpacker:
-            unpacker = default_unpacker
-        else:
-            unpacker = unpacker
 
         epochs_run = self.train_module.epochs_run
         for epoch in range(epochs_run + 1, num_epochs + 1):
@@ -34,6 +26,10 @@ class Trainer:
                             device=device, 
                             unpacker=unpacker)
             self.train_module.logger.log_epoch("train")
+
+            if metrics:
+                for metric in self.train_module.metrics():
+                    metric.reset_state(epoch=epoch, which="train")
              
             if self.train_module.logger.save_checkpoint_flag("train"):
                 self.train_module.save_checkpoint("train", epoch)
@@ -45,6 +41,11 @@ class Trainer:
                                 device=device,
                                 unpacker=unpacker)
                 self.train_module.logger.log_epoch("val")
+
+
+                if metrics:
+                    for metric in self.train_module.metrics():
+                        metric.reset_state(epoch=epoch, which="train")
 
                 if self.train_module.logger.save_checkpoint_flag("val"):
                     self.train_module.save_checkpoint("val", epoch)

@@ -1,8 +1,7 @@
 import os
+from typing import Callable
 import pandas as pd
 from collections import defaultdict
-
-from torchvision.datasets.mnist import Callable
 
 
 class CSVLogger:
