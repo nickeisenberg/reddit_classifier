@@ -3,8 +3,7 @@ from matplotlib.figure import Figure
 import numpy as np
 from matplotlib import colormaps
 import matplotlib.pyplot as plt
-from torch import Tensor, tensor, hstack
-from numpy import round
+from torch import Tensor
 
 
 class ConfusionMatrix:
@@ -21,7 +20,7 @@ class ConfusionMatrix:
         self.targets += targets.tolist()
 
 
-    def reset_state(self, epoch, which):
+    def reset_state(self, epoch, which, *args, **kwargs):
         matrix = self.compute_confusion_matrix(self.targets, self.predictions)
         fig = self.make_confusion_matrix_fig(matrix, self.labels)
 
