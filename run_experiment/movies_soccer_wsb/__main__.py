@@ -2,8 +2,17 @@ import os
 from sys import path
 path.append(os.getcwd())
 
-from src.experiment.experiment import experiment
-from config import config
+from src.trainer.trainer import Trainer 
+from config import config_trainer 
+
+config = config_trainer()
 
 if __name__ == "__main__":
-    experiment(save_root=os.path.split(__file__)[0], **config)
+    Trainer(config["train_module"]).fit(
+        train_loader=config["train_loader"],
+        num_epochs=config["num_epochs"],
+        device=config["device"],
+        unpacker=config["unpacker"],
+        val_loader=config["val_loader"],
+        metrics=True
+    )

@@ -45,7 +45,7 @@ class Trainer:
 
                 if metrics:
                     for metric in self.train_module.metrics():
-                        metric.reset_state(epoch=epoch, which="train")
+                        metric.reset_state(epoch=epoch, which="val")
 
                 if self.train_module.logger.save_checkpoint_flag("val"):
                     self.train_module.save_checkpoint("val", epoch)

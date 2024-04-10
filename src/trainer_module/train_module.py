@@ -1,17 +1,18 @@
 import os
-import numpy as np
 from torch.nn import CrossEntropyLoss, Module
 from torch import Tensor, argmax, save, load, no_grad
 from torch.optim import Adam
 from torch.nn import DataParallel
 
-from src.trainer.logger import CSVLogger
-from src.trainer.metrics import Accuracy
+from src.logger.csv_logger import CSVLogger
+
 
 class TrainModule(Module):
     def __init__(self,
                  model: Module,
                  device: int | str,
+                 accuracy,
+                 conf_mat,
                  state_dict_root: str | None = None,
                  loss_log_root: str | None = None):
         super().__init__()
@@ -34,12 +35,14 @@ class TrainModule(Module):
 
         self.epochs_run = 0
 
-        self.accuracy = Accuracy()
-
+        self.accuracy = accuracy 
+        self.conf_mat = conf_mat 
 
     def metrics(self):
-        return [self.accuracy]
-
+        return [
+            self.accuracy,
+            self.conf_mat
+        ]
 
     def forward(self, x):
         return self.model(x)
@@ -61,11 +64,12 @@ class TrainModule(Module):
         predictions = argmax(outputs, 1).detach()
 
         self.accuracy.log(predictions, targets)
+        self.conf_mat.log(predictions, targets)
 
         self.logger.log_batch(
             {
                 "total_loss": loss.item(),
-                "accuracy": self.accuracy
+                "accuracy": self.accuracy.accuracy
             }
         )
 
@@ -80,16 +84,16 @@ class TrainModule(Module):
             outputs: Tensor = self.model(inputs, masks)
         loss: Tensor = self.loss_fn(outputs, targets)
 
-
         targets = targets.detach()
         predictions = argmax(outputs, 1).detach()
 
         self.accuracy.log(predictions, targets)
+        self.conf_mat.log(predictions, targets)
 
         self.logger.log_batch(
             {
                 "total_loss": loss.item(),
-                "accuracy": self.accuracy
+                "accuracy": self.accuracy.accuracy
             }
         )
 
@@ -134,4 +138,3 @@ class TrainModule(Module):
             self.model.load_state_dict(train_checkpoint["MODEL_STATE"])
             self.optimizer.load_state_dict(train_checkpoint["OPTIMIZER_STATE"])
             self.epochs_run = train_checkpoint["EPOCHS_RUN"]
- 
