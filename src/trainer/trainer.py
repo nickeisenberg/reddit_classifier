@@ -19,38 +19,33 @@ class Trainer:
             val_loader: DataLoader | None = None):
 
 
+        self.call("before_all_epochs")
+
         epochs_run = self.train_module.epochs_run
+
         for epoch in range(epochs_run + 1, num_epochs + 1):
+            self.call("before_train_epoch_pass")
+
             self.epoch_pass(which="train", 
                             epoch=epoch, 
                             loader=train_loader, 
                             device=device, 
                             unpacker=unpacker)
 
-            self.train_module.logger.log_epoch("train")
-
-            if self.train_module.logger.save_checkpoint_flag("train"):
-                self.train_module.save_checkpoint("train", epoch)
-
-            if metrics:
-                for metric in self.train_module.metrics():
-                    metric.reset_state(epoch=epoch, which="train")
+            self.call("after_train_epoch_pass")
 
             if val_loader is not None:
+                self.call("before_validation_epoch_pass")
+
                 self.epoch_pass(which="val",
                                 epoch=epoch,
                                 loader=val_loader,
                                 device=device,
                                 unpacker=unpacker)
 
-                self.train_module.logger.log_epoch("val")
+                self.call("after_validation_epoch_pass")
 
-                if self.train_module.logger.save_checkpoint_flag("val"):
-                    self.train_module.save_checkpoint("val", epoch)
-
-                if metrics:
-                    for metric in self.train_module.metrics():
-                        metric.reset_state(epoch=epoch, which="val")
+        self.call("after_all_epochs")
 
 
     def epoch_pass(self, 
@@ -66,7 +61,9 @@ class Trainer:
             data = unpacker(data, device)
 
             if which == "train":
+                self.call("before_train_batch_pass")
                 self.train_module.train_batch_pass(*data)
+                self.call("after_train_batch_pass")
                 pbar.set_postfix(
                     None, 
                     True,
@@ -75,10 +72,18 @@ class Trainer:
                 )
 
             elif which == "val":
+                self.call("before_validation_batch_pass")
                 self.train_module.val_batch_pass(*data)
+                self.call("after_validation_batch_pass")
                 pbar.set_postfix(
                     None, 
                     True, 
                     EPOCH=epoch,
                     **self.train_module.logger._avg_epoch_history
                 )
+
+
+    def call(self, where_at):
+        for callback in self.train_module.callbacks:
+            if hasattr(callback, where_at):
+                callback(self)

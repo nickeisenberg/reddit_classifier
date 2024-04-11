@@ -4,6 +4,7 @@ import numpy as np
 from matplotlib import colormaps
 import matplotlib.pyplot as plt
 from torch import Tensor
+from torch.nn import Module
 
 from .base import Callback
 
@@ -22,11 +23,31 @@ class ConfusionMatrix(Callback):
         self.targets += targets.tolist()
 
 
-    def reset_state(self, epoch, which, *args, **kwargs):
+    def before_all_epochs(self, trainer: Module, *args, **kwargs):
+        assert hasattr(trainer, "train_module")
+        assert hasattr(trainer.train_module, "metrics_root")
+
+        assert hasattr(trainer, "which_pass")
+        assert hasattr(trainer, "current_epoch")
+
+        self.metrics_root = trainer.train_module.metrics_root
+
+
+    def after_train_epoch_pass(self, trainer, *args, **kwargs):
+        self.reset_state(trainer)
+
+
+    def after_validation_epoch_pass(self, trainer, *args, **kwargs):
+        self.reset_state(trainer)
+
+
+    def reset_state(self, trainer, *args, **kwargs):
         matrix = self.compute_confusion_matrix(self.targets, self.predictions)
         fig = self.make_confusion_matrix_fig(matrix, self.labels)
 
-        save_to = os.path.join(self.save_root, f"{which}_ep{epoch}.png")
+        save_to = os.path.join(
+            self.save_root, f"{trainer.which_pass}_ep{trainer.current_epoch}.png"
+        )
         fig.savefig(save_to)
 
         self.predictions = []
