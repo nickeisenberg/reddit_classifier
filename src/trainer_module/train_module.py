@@ -38,7 +38,7 @@ class TrainModule(Module):
         self.accuracy = accuracy 
         self.conf_mat = conf_mat 
 
-    def metrics(self):
+    def callbacks(self):
         return [
             self.accuracy,
             self.conf_mat
