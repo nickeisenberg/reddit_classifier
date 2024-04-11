@@ -11,6 +11,7 @@ class Trainer:
         self.current_epoch = 0 
         self.which_pass = "N/A" 
 
+
     def fit(self, 
             train_loader: DataLoader,
             num_epochs: int,
@@ -20,24 +21,18 @@ class Trainer:
 
         self.call("before_all_epochs")
 
-        epochs_run = self.train_module.epochs_run
-
-        for epoch in range(epochs_run + 1, num_epochs + 1):
+        for epoch in range(1, num_epochs + 1):
             self.current_epoch = epoch
             self.which_pass = "train" 
 
-            self.epoch_pass(which="train", 
-                            epoch=epoch, 
-                            loader=train_loader, 
+            self.epoch_pass(loader=train_loader, 
                             device=device, 
                             unpacker=unpacker)
 
             if val_loader is not None:
                 self.which_pass = "validation"
 
-                self.epoch_pass(which="validation",
-                                epoch=epoch,
-                                loader=val_loader,
+                self.epoch_pass(loader=val_loader,
                                 device=device,
                                 unpacker=unpacker)
 
@@ -45,32 +40,22 @@ class Trainer:
 
 
     def epoch_pass(self, 
-                   which: str,
-                   epoch: int,
                    loader: DataLoader, 
                    device: str | int, 
                    unpacker: Callable):
+        self.pbar = tqdm(loader, leave=True)
 
-        self.call(f"before_{which}_epoch_pass")
+        self.call(f"before_{self.which_pass}_epoch_pass")
 
-        pbar = tqdm(loader)
-
-        batch_pass = getattr(self.train_module, f"{which}_batch_pass")
-        for batch_idx, data in enumerate(pbar):
+        batch_pass = getattr(self.train_module, f"{self.which_pass}_batch_pass")
+        for batch_idx, data in enumerate(self.pbar):
             data = unpacker(data, device)
 
-            self.call(f"before_{which}_batch_pass")
+            self.call(f"before_{self.which_pass}_batch_pass")
             batch_pass(*data)
-            self.call(f"after_{which}_batch_pass")
+            self.call(f"after_{self.which_pass}_batch_pass")
 
-            pbar.set_postfix(
-                None, 
-                True,
-                EPOCH=epoch,
-                **self.train_module.logger._avg_epoch_history
-            )
-
-        self.call(f"after_{which}_epoch_pass")
+        self.call(f"after_{self.which_pass}_epoch_pass")
 
 
     def call(self, where_at):

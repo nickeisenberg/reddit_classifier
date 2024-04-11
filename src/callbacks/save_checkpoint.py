@@ -1,22 +1,28 @@
 import os
 from torch import save
-from torch.nn import Module, DataParallel
+from torch.nn import DataParallel
 
-from .base import Callback
+from ..trainer.trainer import Trainer
 
 
-class SaveBestCheckoint(Callback):
-    def __init__(self, key):
+class SaveBestCheckoint:
+    def __init__(self, 
+                 state_dict_root: str, 
+                 key: str,
+                 best_train_val = 1e6,
+                 train_check = lambda cur, prev: cur < prev,
+                 best_validation_val = 1e6,
+                 validation_check = lambda cur, prev: cur < prev,
+                 ):
+        self.state_dict_root = state_dict_root 
         self.key = key
-
-        self.best_train_val = 1e6
-        self.train_check = lambda cur, prev: cur < prev
-
-        self.best_validation_val = 1e6
-        self.validation_check = lambda cur, prev: cur < prev
+        self.best_train_val = best_train_val
+        self.train_check = train_check
+        self.best_validation_val = best_validation_val
+        self.validation_check = validation_check
 
 
-    def before_all_epochs(self, trainer: Module):
+    def before_all_epochs(self, trainer: Trainer, *args, **kwargs):
         assert hasattr(trainer, "train_module")
 
         assert hasattr(trainer.train_module, "logger")
@@ -25,25 +31,25 @@ class SaveBestCheckoint(Callback):
 
         assert hasattr(trainer.train_module, "model")
         assert hasattr(trainer.train_module, "optimizer")
-        assert hasattr(trainer.train_module, "state_dict_root")
 
         assert hasattr(trainer, "which_pass")
         assert hasattr(trainer, "current_epoch")
 
 
-    def after_train_epoch_pass(self, trainer: Module):
+    def after_train_epoch_pass(self, trainer: Trainer, *args, **kwargs):
         assert self.key in trainer.train_module.logger.train_history
-        if self.save_checkpoint_flag(trainer, "train"):
-            self.save_checkpoint(trainer, "train")
+
+        if self.save_checkpoint_flag(trainer, trainer.which_pass):
+            self.save_checkpoint(trainer, trainer.which_pass)
 
 
-    def after_validation_epoch_pass(self, trainer: Module):
+    def after_validation_epoch_pass(self, trainer: Trainer, *args, **kwargs):
         assert self.key in trainer.train_module.logger.validation_history
-        if self.save_checkpoint_flag(trainer, "val"):
-            self.save_checkpoint(trainer, "val")
+        if self.save_checkpoint_flag(trainer, trainer.which_pass):
+            self.save_checkpoint(trainer, trainer.which_pass)
 
     
-    def save_checkpoint_flag(self, trainer, which):
+    def save_checkpoint_flag(self, trainer: Trainer, which):
         save_ckp = False
     
         if which == "train":
@@ -52,7 +58,7 @@ class SaveBestCheckoint(Callback):
                 save_ckp = True
                 self.best_train_val = value
     
-        elif which == "val":
+        elif which == "validation":
             value = trainer.train_module.logger.train_history[self.key][-1]
             if self.validation_check(value, self.best_validation_val):
                 save_ckp = True
@@ -61,29 +67,24 @@ class SaveBestCheckoint(Callback):
         return save_ckp
 
 
-    def save_checkpoint(self, trainer, *args, **kwargs):
+    def save_checkpoint(self, trainer: Trainer, *args, **kwargs):
         model = trainer.train_module.model
         optimizer = trainer.train_module.optimizer
-        state_dict_root = trainer.train_module.state_dict_root
-
-        current_epoch = trainer.current_epoch
-        which_pass = trainer.which_pass
     
         checkpoint = {}
     
         save_to = os.path.join(
-            state_dict_root, f"{which_pass}_ckp.pth"
+            self.state_dict_root, f"{trainer.which_pass}_ckp.pth"
         )
     
         if isinstance(model, DataParallel):
             checkpoint["MODEL_STATE"] = model.module.state_dict()
             checkpoint["OPTIMIZER_STATE"] = optimizer.state_dict()
-            checkpoint["EPOCHS_RUN"] = current_epoch 
+            checkpoint["EPOCHS_RUN"] = trainer.current_epoch 
         else:
             checkpoint["MODEL_STATE"] = model.state_dict()
             checkpoint["OPTIMIZER_STATE"] = optimizer.state_dict()
-            checkpoint["EPOCHS_RUN"] = current_epoch 
+            checkpoint["EPOCHS_RUN"] = trainer.current_epoch 
     
         save(checkpoint, save_to)
-        print(f"EPOCH {current_epoch} checkpoint saved at {save_to}")
-
+        print(f"EPOCH {trainer.current_epoch} checkpoint saved at {save_to}")

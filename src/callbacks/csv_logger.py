@@ -1,34 +1,34 @@
 import os
 import pandas as pd
 from collections import defaultdict
-from torch.nn import Module
 
-from .base import Callback
+from ..trainer.trainer import Trainer
 
 
-class CSVLogger(Callback):
-    def __init__(self):
+class CSVLogger:
+    def __init__(self, save_root):
+        self.save_root = save_root
         self.train_history = defaultdict(list)
         self.validation_history = defaultdict(list)
+
         self._epoch_history = defaultdict(list)
         self._avg_epoch_history = defaultdict(float)
 
 
-    def before_all_epochs(self, trainer: Module, *args, **kwargs):
+    def before_all_epochs(self, trainer: Trainer, *args, **kwargs):
         assert hasattr(trainer, "train_module")
-        assert hasattr(trainer.train_module, "loss_log_root")
-        self.loss_log_root = trainer.train_module.loss_log_root
+        assert hasattr(trainer.train_module, "logger")
 
 
-    def after_train_epoch_pass(self, trainer, *args, **kwargs):
-        self.log_epoch("train")
+    def after_train_epoch_pass(self, trainer: Trainer, *args, **kwargs):
+        self._after_epoch(trainer.which_pass)
 
 
-    def after_validation_epoch_pass(self, trainer, *args, **kwargs):
-        self.log_epoch("val")
+    def after_validation_epoch_pass(self, trainer: Trainer, *args, **kwargs):
+        self._after_epoch(trainer.which_pass)
 
 
-    def log_batch(self, loss_dict: dict) -> None:
+    def log(self, loss_dict: dict) -> None:
         """
         Log loss after each batch. Update the CSV or whatever file.
         """
@@ -41,10 +41,10 @@ class CSVLogger(Callback):
             ) / len(self._epoch_history[key])
         
 
-    def log_epoch(self, which) -> None:
+    def _after_epoch(self, which: str) -> None:
         file_name = f"{which}_log.csv"
         loss_log_file_path  = os.path.join(
-            self.loss_log_root, file_name
+            self.save_root, file_name
         )
 
         df = pd.DataFrame(self._epoch_history)
@@ -58,7 +58,7 @@ class CSVLogger(Callback):
         for k in self._avg_epoch_history:
             if which == "train":
                 self.train_history[k].append(self._avg_epoch_history[k])
-            elif which == "val":
+            elif which == "validation":
                 self.validation_history[k].append(self._avg_epoch_history[k])
         
         self._epoch_history = defaultdict(list)

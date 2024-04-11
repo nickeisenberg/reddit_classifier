@@ -1,16 +1,17 @@
 import os
 from torch.utils.data import DataLoader
-
-from src.callbacks import (
-    Accuracy, 
-    SaveBestCheckoint, 
-    CSVLogger, 
-    ConfusionMatrix
-)
-
 from src.transformer.layers import Transformer
 from src.data.dataset import TextFolderWithBertTokenizer
 from src.data.utils import transformer_unpacker
+
+from src.callbacks import (
+    Accuracy,
+    CSVLogger,
+    ConfusionMatrix,
+    ProgressBarUpdater,
+    SaveBestCheckoint
+)
+
 from src.trainer_module.train_module import TrainModule
 
 
@@ -78,21 +79,26 @@ def config_trainer():
             x[1] 
             for x in sorted(tdataset.id_to_label.items(), key = lambda x: x[0])
         ],
+        save_root=metrics_root
     )
-    logger = CSVLogger()
-    save_best = SaveBestCheckoint("total_loss")
+    logger = CSVLogger(loss_log_root)
+    save_best = SaveBestCheckoint(
+        state_dict_root=state_dict_root,
+        key="total_loss"
+    )
+    pbar_updater = ProgressBarUpdater()
+
 
     train_module = TrainModule(
-        model=model.to(device),
+        model=model.to(device), 
         device=device,
         accuracy=accuracy,
         conf_mat=conf_mat,
         logger=logger,
         save_best=save_best,
-        state_dict_root=state_dict_root, 
-        loss_log_root=loss_log_root,
-        metrics_root=metrics_root
+        progress_bar_updater=pbar_updater
     )
+
 
     num_epochs = 5
     unpacker =transformer_unpacker

@@ -1,17 +1,19 @@
 import os
 from matplotlib.figure import Figure
 import numpy as np
+from numpy import ndarray
 from matplotlib import colormaps
 import matplotlib.pyplot as plt
 from torch import Tensor
-from torch.nn import Module
 
-from .base import Callback
+from ..trainer.trainer import Trainer
 
 
-class ConfusionMatrix(Callback):
-    def __init__(self, labels):
+class ConfusionMatrix:
+    def __init__(self, labels: list, save_root: str):
         self.labels = labels
+
+        self.save_root = save_root
         
         self.predictions = []
         self.targets = []
@@ -22,30 +24,26 @@ class ConfusionMatrix(Callback):
         self.targets += targets.tolist()
 
 
-    def before_all_epochs(self, trainer: Module, *args, **kwargs):
+    def before_all_epochs(self, trainer: Trainer, *args, **kwargs):
         assert hasattr(trainer, "train_module")
-        assert hasattr(trainer.train_module, "metrics_root")
-
         assert hasattr(trainer, "which_pass")
         assert hasattr(trainer, "current_epoch")
 
-        self.metrics_root = trainer.train_module.metrics_root
+
+    def after_train_epoch_pass(self, trainer: Trainer, *args, **kwargs):
+        self.reset_state(trainer.which_pass, trainer.current_epoch)
 
 
-    def after_train_epoch_pass(self, trainer, *args, **kwargs):
-        self.reset_state(trainer)
+    def after_validation_epoch_pass(self, trainer: Trainer, *args, **kwargs):
+        self.reset_state(trainer.which_pass, trainer.current_epoch)
 
 
-    def after_validation_epoch_pass(self, trainer, *args, **kwargs):
-        self.reset_state(trainer)
-
-
-    def reset_state(self, trainer, *args, **kwargs):
+    def reset_state(self, which, epoch, *args, **kwargs):
         matrix = self.compute_confusion_matrix(self.targets, self.predictions)
         fig = self.make_confusion_matrix_fig(matrix, self.labels)
 
         save_to = os.path.join(
-            self.metrics_root, f"{trainer.which_pass}_ep{trainer.current_epoch}.png"
+            self.save_root, f"{which}_ep{epoch}.png"
         )
         fig.savefig(save_to)
 
@@ -55,7 +53,7 @@ class ConfusionMatrix(Callback):
 
     
     @staticmethod
-    def compute_confusion_matrix(targets, predictions):
+    def compute_confusion_matrix(targets: list[int], predictions: list[int]):
         """
         Compute a confusion matrix for multi-class classification.
     
@@ -72,9 +70,9 @@ class ConfusionMatrix(Callback):
         for actual, predicted in zip(targets, predictions):
             matrix[actual, predicted] += 1
         return matrix
-    
+
     @staticmethod 
-    def make_confusion_matrix_fig(matrix, class_names) -> Figure:
+    def make_confusion_matrix_fig(matrix:ndarray, class_names: list) -> Figure:
         """
         Plot the confusion matrix using matplotlib.
     
@@ -114,12 +112,3 @@ class ConfusionMatrix(Callback):
         plt.tight_layout()
     
         return fig
-
-
-if __name__ == "__main__":
-    conf_mat = ConfusionMatrix(np.arange(3))
-    conf_mat.run(
-        np.random.randint(0, 2, 10),
-        np.random.randint(0, 2, 10),
-        "confmat.png"
-    )

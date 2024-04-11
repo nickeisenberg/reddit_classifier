@@ -1,14 +1,13 @@
-import os
 from torch.nn import CrossEntropyLoss, Module
-from torch import Tensor, argmax, save, load, no_grad
+from torch import Tensor, argmax, no_grad
 from torch.optim import Adam
-from torch.nn import DataParallel
 
 from src.callbacks import (
     Accuracy,
     CSVLogger,
     SaveBestCheckoint,
-    ConfusionMatrix
+    ConfusionMatrix,
+    ProgressBarUpdater
 )
 
 
@@ -20,9 +19,8 @@ class TrainModule(Module):
                  conf_mat: ConfusionMatrix,
                  logger: CSVLogger,
                  save_best: SaveBestCheckoint,
-                 state_dict_root: str,
-                 loss_log_root: str,
-                 metrics_root: str):
+                 progress_bar_updater: ProgressBarUpdater):
+
         super().__init__()
         
         self.model = model
@@ -31,16 +29,11 @@ class TrainModule(Module):
         self.loss_fn = CrossEntropyLoss()
         self.optimizer = Adam(self.model.parameters(), lr=.0001)
         
-        self.state_dict_root = state_dict_root
-        self.loss_log_root = loss_log_root
-        self.metrics_root = metrics_root 
-        
         self.accuracy = accuracy 
         self.conf_mat = conf_mat 
         self.logger = logger
         self.save_best = save_best
-
-        self.epochs_run = 0
+        self.progress_bar_updater = progress_bar_updater 
 
 
     def callbacks(self):
@@ -48,7 +41,8 @@ class TrainModule(Module):
             self.accuracy,
             self.conf_mat,
             self.logger,
-            self.save_best
+            self.save_best,
+            self.progress_bar_updater
         ]
 
 
@@ -74,7 +68,7 @@ class TrainModule(Module):
         self.accuracy.log(predictions, targets)
         self.conf_mat.log(predictions, targets)
 
-        self.logger.log_batch(
+        self.logger.log(
             {
                 "total_loss": loss.item(),
                 "accuracy": self.accuracy.accuracy
@@ -98,7 +92,7 @@ class TrainModule(Module):
         self.accuracy.log(predictions, targets)
         self.conf_mat.log(predictions, targets)
 
-        self.logger.log_batch(
+        self.logger.log(
             {
                 "total_loss": loss.item(),
                 "accuracy": self.accuracy.accuracy

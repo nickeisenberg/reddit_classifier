@@ -1,11 +1,15 @@
 import os
 from torch import load, Tensor
-from torch.nn import Module, DataParallel
+from torch.nn import DataParallel
 
-from .base import Callback
+from ..trainer.trainer import Trainer
 
-class LoadCheckpoint(Callback):
-    def before_all_epochs(self, trainer: Module, *args, **kwargs):
+
+class LoadCheckpoint:
+    def __init__(self, load_from: str):
+        self.load_from = load_from
+
+    def before_all_epochs(self, trainer: Trainer, *args, **kwargs):
         assert hasattr(trainer, "train_module")
 
         assert hasattr(trainer.train_module, "model")
@@ -18,12 +22,8 @@ class LoadCheckpoint(Callback):
         self.load_checkpoint(trainer)
 
 
-    def load_checkpoint(self, trainer, *args, **kwargs):
-        load_from = os.path.join(
-            self.state_dict_root, f"train_ckp.pth"
-        )
-    
-        train_checkpoint = load(load_from)
+    def load_checkpoint(self, trainer: Trainer, *args, **kwargs):
+        train_checkpoint = load(self.load_from)
     
         for state in train_checkpoint["OPTIMIZER_STATE"]["state"].values():
             for k, v in state.items():
