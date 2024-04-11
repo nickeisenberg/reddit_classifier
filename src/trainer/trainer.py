@@ -9,6 +9,7 @@ class Trainer:
         
         self.train_module = train_module 
 
+
     def fit(self, 
             train_loader: DataLoader,
             num_epochs: int,
@@ -25,14 +26,15 @@ class Trainer:
                             loader=train_loader, 
                             device=device, 
                             unpacker=unpacker)
+
             self.train_module.logger.log_epoch("train")
+
+            if self.train_module.logger.save_checkpoint_flag("train"):
+                self.train_module.save_checkpoint("train", epoch)
 
             if metrics:
                 for metric in self.train_module.metrics():
                     metric.reset_state(epoch=epoch, which="train")
-             
-            if self.train_module.logger.save_checkpoint_flag("train"):
-                self.train_module.save_checkpoint("train", epoch)
 
             if val_loader is not None:
                 self.epoch_pass(which="val",
@@ -40,15 +42,15 @@ class Trainer:
                                 loader=val_loader,
                                 device=device,
                                 unpacker=unpacker)
+
                 self.train_module.logger.log_epoch("val")
 
+                if self.train_module.logger.save_checkpoint_flag("val"):
+                    self.train_module.save_checkpoint("val", epoch)
 
                 if metrics:
                     for metric in self.train_module.metrics():
                         metric.reset_state(epoch=epoch, which="val")
-
-                if self.train_module.logger.save_checkpoint_flag("val"):
-                    self.train_module.save_checkpoint("val", epoch)
 
 
     def epoch_pass(self, 

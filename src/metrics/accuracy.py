@@ -15,10 +15,9 @@ class Accuracy:
              self._running_total.mean().item() * 100, 2
          )
 
-        
+
     def reset_state(self, *args, **kwargs):
         """
         do some things here and then reset the state of the metric.
         """
         self._running_total = tensor([])
-
