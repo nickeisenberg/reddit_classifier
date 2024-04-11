@@ -4,8 +4,9 @@ from torch.nn import DataParallel
 
 from ..trainer.trainer import Trainer
 
+from .base import Callback
 
-class LoadCheckpoint:
+class LoadCheckpoint(Callback):
     def __init__(self, load_from: str):
         self.load_from = load_from
 

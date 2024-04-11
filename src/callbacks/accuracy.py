@@ -1,8 +1,10 @@
 from torch import Tensor, tensor, hstack
 from numpy import round
 
+from .base import Callback
 
-class Accuracy:
+
+class Accuracy(Callback):
     def __init__(self):
         self.accuracy = 0.0
         self._running_total = tensor([])

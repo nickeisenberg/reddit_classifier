@@ -4,8 +4,9 @@ from torch.nn import DataParallel
 
 from ..trainer.trainer import Trainer
 
+from .base import Callback
 
-class SaveBestCheckoint:
+class SaveBestCheckoint(Callback):
     def __init__(self, 
                  state_dict_root: str, 
                  key: str,

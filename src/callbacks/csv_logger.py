@@ -4,8 +4,9 @@ from collections import defaultdict
 
 from ..trainer.trainer import Trainer
 
+from .base import Callback
 
-class CSVLogger:
+class CSVLogger(Callback):
     def __init__(self, save_root):
         self.save_root = save_root
         self.train_history = defaultdict(list)

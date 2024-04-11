@@ -8,8 +8,10 @@ from torch import Tensor
 
 from ..trainer.trainer import Trainer
 
+from .base import Callback
 
-class ConfusionMatrix:
+
+class ConfusionMatrix(Callback):
     def __init__(self, labels: list, save_root: str):
         self.labels = labels
 

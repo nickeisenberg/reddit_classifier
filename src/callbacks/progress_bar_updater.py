@@ -1,7 +1,8 @@
 from ..trainer.trainer import Trainer
 
+from .base import Callback
 
-class ProgressBarUpdater:
+class ProgressBarUpdater(Callback):
     def before_all_epochs(self, trainer: Trainer, *args, **kwargs):
         assert hasattr(trainer, "train_module")
         assert hasattr(trainer.train_module, "logger")
