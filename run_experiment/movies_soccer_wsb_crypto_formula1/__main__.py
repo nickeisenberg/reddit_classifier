@@ -14,5 +14,4 @@ if __name__ == "__main__":
         device=config["device"],
         unpacker=config["unpacker"],
         val_loader=config["val_loader"],
-        metrics=True
     )
