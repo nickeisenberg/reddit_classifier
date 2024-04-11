@@ -22,8 +22,6 @@ class SaveBestCheckoint(Callback):
         assert hasattr(trainer.train_module, "logger")
         assert hasattr(trainer.train_module.logger, "train_history")
         assert hasattr(trainer.train_module.logger, "validation_history")
-        assert self.key in trainer.train_module.logger.train_history
-        assert self.key in trainer.train_module.logger.validation_history
 
         assert hasattr(trainer.train_module, "model")
         assert hasattr(trainer.train_module, "optimizer")
@@ -34,11 +32,13 @@ class SaveBestCheckoint(Callback):
 
 
     def after_train_epoch_pass(self, trainer: Module):
+        assert self.key in trainer.train_module.logger.train_history
         if self.save_checkpoint_flag(trainer, "train"):
             self.save_checkpoint(trainer, "train")
 
 
     def after_validation_epoch_pass(self, trainer: Module):
+        assert self.key in trainer.train_module.logger.validation_history
         if self.save_checkpoint_flag(trainer, "val"):
             self.save_checkpoint(trainer, "val")
 

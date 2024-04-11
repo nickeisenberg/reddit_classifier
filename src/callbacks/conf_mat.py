@@ -10,9 +10,8 @@ from .base import Callback
 
 
 class ConfusionMatrix(Callback):
-    def __init__(self, labels, save_root):
+    def __init__(self, labels):
         self.labels = labels
-        self.save_root = save_root
         
         self.predictions = []
         self.targets = []
@@ -46,7 +45,7 @@ class ConfusionMatrix(Callback):
         fig = self.make_confusion_matrix_fig(matrix, self.labels)
 
         save_to = os.path.join(
-            self.save_root, f"{trainer.which_pass}_ep{trainer.current_epoch}.png"
+            self.metrics_root, f"{trainer.which_pass}_ep{trainer.current_epoch}.png"
         )
         fig.savefig(save_to)
 
