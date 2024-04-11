@@ -15,7 +15,9 @@ class SaveBestCheckoint:
                  validation_check = lambda cur, prev: cur < prev,
                  ):
         self.state_dict_root = state_dict_root 
+
         self.key = key
+
         self.best_train_val = best_train_val
         self.train_check = train_check
         self.best_validation_val = best_validation_val
@@ -26,6 +28,7 @@ class SaveBestCheckoint:
         assert hasattr(trainer, "train_module")
 
         assert hasattr(trainer.train_module, "logger")
+
         assert hasattr(trainer.train_module.logger, "train_history")
         assert hasattr(trainer.train_module.logger, "validation_history")
 
