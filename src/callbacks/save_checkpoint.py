@@ -6,7 +6,9 @@ from .base import Callback
 
 
 class SaveBestCheckoint(Callback):
-    def __init__(self):
+    def __init__(self, key):
+        self.key = key
+
         self.best_train_val = 1e6
         self.train_check = lambda cur, prev: cur < prev
 
@@ -20,8 +22,8 @@ class SaveBestCheckoint(Callback):
         assert hasattr(trainer.train_module, "logger")
         assert hasattr(trainer.train_module.logger, "train_history")
         assert hasattr(trainer.train_module.logger, "validation_history")
-        assert "total_loss" in trainer.train_module.logger.train_history
-        assert "total_loss" in trainer.train_module.logger.validation_history
+        assert self.key in trainer.train_module.logger.train_history
+        assert self.key in trainer.train_module.logger.validation_history
 
         assert hasattr(trainer.train_module, "model")
         assert hasattr(trainer.train_module, "optimizer")
@@ -45,13 +47,13 @@ class SaveBestCheckoint(Callback):
         save_ckp = False
     
         if which == "train":
-            value = trainer.train_module.logger.train_history["total_loss"][-1]
+            value = trainer.train_module.logger.train_history[self.key][-1]
             if self.train_check(value, self.best_train_val):
                 save_ckp = True
                 self.best_train_val = value
     
         elif which == "val":
-            value = trainer.train_module.logger.train_history["total_loss"][-1]
+            value = trainer.train_module.logger.train_history[self.key][-1]
             if self.validation_check(value, self.best_validation_val):
                 save_ckp = True
                 self.best_validation_val = value

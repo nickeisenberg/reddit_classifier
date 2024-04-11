@@ -13,14 +13,14 @@ class LoadCheckpoint(Callback):
         assert hasattr(trainer.train_module, "state_dict_root")
         assert hasattr(trainer.train_module, "device")
 
+        self.state_dict_root = trainer.train_module.state_dict_root
+
         self.load_checkpoint(trainer)
 
 
     def load_checkpoint(self, trainer, *args, **kwargs):
-        state_dict_root = trainer.train_module.state_dict_root
-    
         load_from = os.path.join(
-            state_dict_root, f"train_ckp.pth"
+            self.state_dict_root, f"train_ckp.pth"
         )
     
         train_checkpoint = load(load_from)

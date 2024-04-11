@@ -5,8 +5,10 @@ from matplotlib import colormaps
 import matplotlib.pyplot as plt
 from torch import Tensor
 
+from .base import Callback
 
-class ConfusionMatrix:
+
+class ConfusionMatrix(Callback):
     def __init__(self, labels, save_root):
         self.labels = labels
         self.save_root = save_root

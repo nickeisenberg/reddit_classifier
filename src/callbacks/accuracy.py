@@ -1,11 +1,14 @@
 from torch import Tensor, tensor, hstack
 from numpy import round
 
+from .base import Callback
 
-class Accuracy:
+
+class Accuracy(Callback):
     def __init__(self):
         self.accuracy = 0.0
         self._running_total = tensor([])
+
 
     def log(self, predictions: Tensor, targets: Tensor):
         predictions, targets = predictions.cpu(), targets.cpu()
@@ -16,8 +19,9 @@ class Accuracy:
          )
 
 
-    def reset_state(self, *args, **kwargs):
-        """
-        do some things here and then reset the state of the metric.
-        """
-        self._running_total = tensor([])
+    def after_train_epoch_pass(self, *args, **kwargs):
+        self.__init__()
+
+
+    def after_validation_epoch_pass(self, *args, **kwargs):
+        self.__init__()
