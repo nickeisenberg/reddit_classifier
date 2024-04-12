@@ -63,7 +63,7 @@ def config_trainer():
 
     model = Transformer(
         vocab_size=vocab_size,
-        num_classes=9, 
+        num_classes=10, 
         max_length=max_length, 
         embed_size=64,
         num_layers=5, 
@@ -100,7 +100,7 @@ def config_trainer():
     )
 
 
-    num_epochs = 5
+    num_epochs = 10
     unpacker =transformer_unpacker
     config = {
         "train_module": train_module,

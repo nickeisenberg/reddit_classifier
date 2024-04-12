@@ -12,10 +12,15 @@ from .base import Callback
 
 
 class ConfusionMatrix(Callback):
-    def __init__(self, labels: list, save_root: str):
+    def __init__(self, 
+                 labels: list, 
+                 save_root: str, 
+                 figsize: tuple[int, int] = (12, 8)):
         self.labels = labels
 
         self.save_root = save_root
+
+        self.figsize = figsize
         
         self.predictions = []
         self.targets = []
@@ -42,7 +47,7 @@ class ConfusionMatrix(Callback):
 
     def reset_state(self, which, epoch, *args, **kwargs):
         matrix = self.compute_confusion_matrix(self.targets, self.predictions)
-        fig = self.make_confusion_matrix_fig(matrix, self.labels)
+        fig = self.make_confusion_matrix_fig(matrix, self.labels, self.figsize)
 
         save_to = os.path.join(
             self.save_root, f"{which}_ep{epoch}.png"
@@ -74,7 +79,9 @@ class ConfusionMatrix(Callback):
         return matrix
 
     @staticmethod 
-    def make_confusion_matrix_fig(matrix:ndarray, class_names: list) -> Figure:
+    def make_confusion_matrix_fig(matrix:ndarray, 
+                                  class_names: list,
+                                  figsize: tuple[int, int] = (12, 8)) -> Figure:
         """
         Plot the confusion matrix using matplotlib.
     
@@ -89,7 +96,7 @@ class ConfusionMatrix(Callback):
     
         accuracy = np.round(np.einsum("ii->i", matrix).sum() / matrix.sum() * 100, 2)
     
-        fig, ax = plt.subplots(figsize=(10, 7))
+        fig, ax = plt.subplots(figsize=figsize)
         percentages = matrix / matrix.sum(axis=1)
         cax = ax.matshow(percentages, cmap=colormaps["Blues"])
         plt.title(f'Confusion Matrix: Accuracy {accuracy}%', pad=20)

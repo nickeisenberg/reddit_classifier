@@ -22,7 +22,8 @@ def config_datasets():
         "Bitcoin": "ignore",
         "chelseafc": "ignore",
         "popheads": "ignore",
-        "pelotoncycle": "ignore"
+        "pelotoncycle": "ignore",
+        "hiphopheads": "ignore"
     }
     train_dataset = TextFolderWithBertTokenizer(
         root_dir="data",

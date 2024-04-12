@@ -15,10 +15,11 @@ if __name__ == "__main__":
         # "soccer": "Daily Discussion",
         # "movies": "Official Discussion",
         # "formula1": "Daily Discussion",
-        "Bitcoin": "Daily Discussion",
-        "chelseafc": "Daily Discussion Thread",
-        "pelotoncycle": "Daily Discussion",
-        "popheads": "Daily Discussion",
+        # "Bitcoin": "Daily Discussion",
+        # "chelseafc": "Daily Discussion Thread",
+        # "pelotoncycle": "Daily Discussion",
+        # "popheads": "Daily Discussion",
+        "hiphopheads": "Daily Discussion",
     }
     
     make_reddit_comment_dataset(
