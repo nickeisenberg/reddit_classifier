@@ -11,10 +11,14 @@ if __name__ == "__main__":
     
     searches = {
         # "wallstreetbets": "Daily Discussion Thread",
-        "CryptoCurrency": "Daily Crypto Discussion",
+        # "CryptoCurrency": "Daily Crypto Discussion",
         # "soccer": "Daily Discussion",
         # "movies": "Official Discussion",
-        "formula1": "Daily Discussion",
+        # "formula1": "Daily Discussion",
+        "Bitcoin": "Daily Discussion",
+        "chelseafc": "Daily Discussion Thread",
+        "pelotoncycle": "Daily Discussion",
+        "popheads": "Daily Discussion",
     }
     
     make_reddit_comment_dataset(

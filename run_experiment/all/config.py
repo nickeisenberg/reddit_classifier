@@ -17,24 +17,15 @@ from src.trainer_module.train_module import TrainModule
 
 def config_datasets():
     max_length=256
-
-    instructions={
-        "Bitcoin": "ignore",
-        "chelseafc": "ignore",
-        "popheads": "ignore",
-        "pelotoncycle": "ignore"
-    }
     train_dataset = TextFolderWithBertTokenizer(
         root_dir="data",
         which="train",
-        instructions=instructions,
         max_length=max_length
     )
     validation_dataset = TextFolderWithBertTokenizer(
         root_dir="data",
         which="val",
         label_id_map=train_dataset.label_to_id,
-        instructions=instructions,
         max_length=max_length
     )
     return train_dataset, validation_dataset
@@ -72,7 +63,7 @@ def config_trainer():
 
     model = Transformer(
         vocab_size=vocab_size,
-        num_classes=5, 
+        num_classes=9, 
         max_length=max_length, 
         embed_size=64,
         num_layers=5, 
