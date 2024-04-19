@@ -45,6 +45,10 @@ class ConfusionMatrix(Callback):
         self.reset_state(trainer.which_pass, trainer.current_epoch)
 
 
+    def after_evaluation_epoch_pass(self, trainer: Trainer, *args, **kwargs):
+        self.reset_state(trainer.which_pass, trainer.current_epoch)
+
+
     def reset_state(self, which, epoch, *args, **kwargs):
         matrix = self.compute_confusion_matrix(self.targets, self.predictions)
         fig = self.make_confusion_matrix_fig(matrix, self.labels, self.figsize)

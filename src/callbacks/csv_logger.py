@@ -29,6 +29,10 @@ class CSVLogger(Callback):
         self._after_epoch(trainer.which_pass)
 
 
+    def after_evaluation_epoch_pass(self, trainer: Trainer, *args, **kwargs):
+        self._after_epoch(trainer.which_pass)
+
+
     def log(self, loss_dict: dict) -> None:
         """
         Log loss after each batch. Update the CSV or whatever file.

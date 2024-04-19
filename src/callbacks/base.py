@@ -24,5 +24,14 @@ class Callback(ABC):
     def after_validation_epoch_pass(self, trainer: Trainer, *args, **kwargs):
         pass
 
+    def before_evaluation_epoch_pass(self, trainer: Trainer, *args, **kwargs):
+        pass
+
+    def before_evaluation_batch_pass(self, trainer: Trainer, *args, **kwargs):
+        pass
+
+    def after_evaluation_epoch_pass(self, trainer: Trainer, *args, **kwargs):
+        pass
+
     def after_all_epochs(self, trainer: Trainer, *args, **kwargs):
         pass

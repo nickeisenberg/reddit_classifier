@@ -46,6 +46,25 @@ class Trainer:
         self.call("after_all_epochs")
 
 
+    def evaluate(self,
+                 loader: DataLoader,
+                 device: str | int,
+                 unpacker: Callable):
+        self.call("before_all_epochs")
+
+        self.which_pass = "evaluation" 
+
+        self.pbar = tqdm(loader, leave=True)
+
+        self.call(f"before_{self.which_pass}_epoch_pass")
+        self.epoch_pass(loader=self.pbar, 
+                        device=device, 
+                        unpacker=unpacker)
+        self.call(f"after_{self.which_pass}_epoch_pass")
+
+        self.call("after_all_epochs")
+
+
     def epoch_pass(self, 
                    loader: tqdm, 
                    device: str | int, 

@@ -25,3 +25,7 @@ class Accuracy(Callback):
 
     def after_validation_epoch_pass(self, *args, **kwargs):
         self.__init__()
+
+
+    def after_evaluation_epoch_pass(self, *args, **kwargs):
+        self.__init__()

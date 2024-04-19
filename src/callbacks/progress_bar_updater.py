@@ -35,3 +35,16 @@ class ProgressBarUpdater(Callback):
             EPOCH=trainer.current_epoch,
             **trainer.train_module.logger._avg_epoch_history
         )
+
+
+    def before_evaluation_epoch_pass(self, trainer: Trainer, *args, **kwargs):
+        assert hasattr(trainer, "pbar")
+
+
+    def after_evaluation_batch_pass(self, trainer: Trainer, *args, **kwargs):
+        trainer.pbar.set_postfix(
+            None, 
+            True,
+            **trainer.train_module.logger._avg_epoch_history
+        )
+

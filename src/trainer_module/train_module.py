@@ -98,3 +98,27 @@ class TrainModule(Module):
                 "accuracy": self.accuracy.accuracy
             }
         )
+
+
+    def evaluation_batch_pass(self, *unpacked_loader_data):
+        if self.model.training:
+            self.model.eval()
+
+        (inputs, masks), targets = unpacked_loader_data
+
+        with no_grad():
+            outputs: Tensor = self.model(inputs, masks)
+        loss: Tensor = self.loss_fn(outputs, targets)
+
+        targets = targets.detach()
+        predictions = argmax(outputs, 1).detach()
+
+        self.accuracy.log(predictions, targets)
+        self.conf_mat.log(predictions, targets)
+
+        self.logger.log(
+            {
+                "total_loss": loss.item(),
+                "accuracy": self.accuracy.accuracy
+            }
+        )
