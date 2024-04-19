@@ -1,7 +1,17 @@
+# About
+
 A transformer classifer trained on comments from 10 popular subreddits.
 The subreddits choosen all have a popular "Daily" chat post and 100 comments
 were scraped from the last 100 "Daily" posts of each of the subreddits. The 
-comments were pulled using `praw`. Training consisted of 20 epochs.
+comments were scraped using `praw`. Training consisted of 20 epochs.
+
+I really like the callback system that pytorch lightning uses and wanted to
+experiment coding a lightweight version of this. The `Trainer` found in 
+`./src/trainer/trainer.py` implements this and all of the callbacks used are
+in `./src/callbacks`. The `TrainModule` in `./src/trainer_module/train_module.py` 
+will implement the callbacks.
+
+# Some Results
 
 Below are the results of the transformer on the testing data after 20 epochs.
 There are several groups of similar subreddits that cause confusion to the
