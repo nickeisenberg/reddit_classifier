@@ -1,5 +1,5 @@
 from torch.nn import CrossEntropyLoss, Module
-from torch import Tensor, argmax, no_grad
+from torch import Tensor, argmax, no_grad, load
 from torch.optim import Adam
 
 from src.callbacks import (
@@ -19,12 +19,19 @@ class TrainModule(Module):
                  conf_mat: ConfusionMatrix,
                  logger: CSVLogger,
                  save_best: SaveBestCheckoint,
-                 progress_bar_updater: ProgressBarUpdater):
+                 progress_bar_updater: ProgressBarUpdater,
+                 load_state_dict_from: str | None = None):
 
         super().__init__()
         
         self.model = model
+
+        if load_state_dict_from is not None:
+            sd = load(load_state_dict_from, map_location="cpu")
+            self.model.load_state_dict(sd["MODEL_STATE"])
+
         self.device = device
+        self.model = self.model.to(self.device)
 
         self.loss_fn = CrossEntropyLoss()
         self.optimizer = Adam(self.model.parameters(), lr=.0001)

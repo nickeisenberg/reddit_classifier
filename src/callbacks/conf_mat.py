@@ -46,7 +46,7 @@ class ConfusionMatrix(Callback):
 
 
     def after_evaluation_epoch_pass(self, trainer: Trainer, *args, **kwargs):
-        self.reset_state(trainer.which_pass, trainer.current_epoch)
+        self.reset_state(trainer.which_pass, 0)
 
 
     def reset_state(self, which, epoch, *args, **kwargs):
