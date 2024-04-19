@@ -21,3 +21,5 @@ results are much better. I collaped the classes as follows:
     pelotoncycle = "pelotoncycle"
     formula1 = "formula1"
 ```
+
+![](./run_experiment/all_collapsed/metrics/evaluation_ep0.png) 
