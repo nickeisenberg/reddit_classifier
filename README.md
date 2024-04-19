@@ -9,7 +9,7 @@ model. First wallstreetbets, CryptoCurrency and Bitcon get confused for
 one another. Similarly popheads, hiphopheads and movies get confused with
 one another. Lastly soccer and chealsefc get confused.
 
-![](./run_experiment/all/metrics/evaluation_ep0.png_ep0.pn) 
+![](./run_experiment/all/metrics/evaluation_ep0.png) 
 
 
 If we collapse the above classes by group and retrain the transformer, then 
