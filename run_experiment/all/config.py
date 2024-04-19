@@ -28,13 +28,20 @@ def config_datasets():
         label_id_map=train_dataset.label_to_id,
         max_length=max_length
     )
-    return train_dataset, validation_dataset
+    evalutaion_dataset = TextFolderWithBertTokenizer(
+        root_dir="data",
+        which="test",
+        label_id_map=train_dataset.label_to_id,
+        max_length=max_length
+    )
+    return train_dataset, validation_dataset, evalutaion_dataset
 
 
-def config_loaders(train_dataset, validation_dataset):
+def config_loaders(train_dataset, validation_dataset, evaluation_dataset):
     train_loader = DataLoader(train_dataset, batch_size=128, shuffle=True)
     validation_loader = DataLoader(validation_dataset, batch_size=128, shuffle=True)
-    return train_loader, validation_loader
+    evaluation_loader = DataLoader(evaluation_dataset, batch_size=128, shuffle=True)
+    return train_loader, validation_loader, evaluation_loader
 
 
 def config_save_roots():
@@ -52,10 +59,10 @@ def config_save_roots():
     return state_dict_root, loss_log_root, metrics_root
 
 
-def config_trainer():
-    tdataset, vdataset = config_datasets()
+def config_trainer(train=True):
+    tdataset, vdataset, edataset = config_datasets()
     vocab_size = tdataset.tokenizer.vocab_size
-    tloader, vloader = config_loaders(tdataset, vdataset)
+    tloader, vloader, eloader = config_loaders(tdataset, vdataset, edataset)
 
     state_dict_root, loss_log_root, metrics_root = config_save_roots()
 
@@ -88,19 +95,32 @@ def config_trainer():
     )
     pbar_updater = ProgressBarUpdater()
 
+    if train: 
+        train_module = TrainModule(
+            model=model, 
+            device=device,
+            accuracy=accuracy,
+            conf_mat=conf_mat,
+            logger=logger,
+            save_best=save_best,
+            progress_bar_updater=pbar_updater
+        )
+    else:
+        train_module = TrainModule(
+            model=model, 
+            device=device,
+            accuracy=accuracy,
+            conf_mat=conf_mat,
+            logger=logger,
+            save_best=save_best,
+            progress_bar_updater=pbar_updater,
+            load_state_dict_from=os.path.join(
+                state_dict_root, "validation_ckp.pth"
+            )
+        )
 
-    train_module = TrainModule(
-        model=model.to(device), 
-        device=device,
-        accuracy=accuracy,
-        conf_mat=conf_mat,
-        logger=logger,
-        save_best=save_best,
-        progress_bar_updater=pbar_updater
-    )
 
-
-    num_epochs = 10
+    num_epochs = 20
     unpacker =transformer_unpacker
     config = {
         "train_module": train_module,
@@ -109,6 +129,6 @@ def config_trainer():
         "device": train_module.device,
         "unpacker": unpacker,
         "val_loader": vloader,
+        "evaluation_loader": eloader,
     }
     return config
-

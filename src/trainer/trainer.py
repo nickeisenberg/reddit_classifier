@@ -84,6 +84,3 @@ class Trainer:
             if hasattr(callback, where_at):
                 method = getattr(callback, where_at)
                 method(self)
-
-
-

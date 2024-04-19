@@ -63,7 +63,7 @@ class SaveBestCheckoint(Callback):
                 self.best_train_val = value
     
         elif which == "validation":
-            value = trainer.train_module.logger.train_history[self.key][-1]
+            value = trainer.train_module.logger.validation_history[self.key][-1]
             if self.validation_check(value, self.best_validation_val):
                 save_ckp = True
                 self.best_validation_val = value
