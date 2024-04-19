@@ -14,10 +14,10 @@ one another. Lastly soccer and chealsefc get confused.
 
 If we collapse the above classes by group and retrain the transformer, then 
 results are much better. I collaped the classes as follows:
-'''
+```
     finance = ["Bitcoin", "CryptoCurrency", "wallstreetbets"]
     soccer = ["soccer", "chelseafc"]
     pop_culture = ["movies", "popheads", "hiphopheads"]
     pelotoncycle = "pelotoncycle"
     formula1 = "formula1"
-'''
+```
