@@ -96,6 +96,16 @@ def config_trainer(load_checkpoint=False):
     )
     pbar_updater = ProgressBarUpdater()
 
+
+    if load_checkpoint: 
+        load_state_dict_from = os.path.join(
+            state_dict_root, "validation_ckp.pth"
+        )
+        sd = load(load_state_dict_from, map_location="cpu")
+        model.load_state_dict(sd["MODEL_STATE"])
+        save_best.best_train_val = sd["BEST_TRAIN"]
+        save_best.best_validation_val = sd["BEST_VALIDATION"]
+
     train_module = TrainModule(
         model=model, 
         device=device,
@@ -105,15 +115,6 @@ def config_trainer(load_checkpoint=False):
         save_best=save_best,
         progress_bar_updater=pbar_updater
     )
-
-    if load_checkpoint: 
-        load_state_dict_from = os.path.join(
-            state_dict_root, "validation_ckp.pth"
-        )
-        sd = load(load_state_dict_from, map_location="cpu")
-        train_module.model.load_state_dict(sd["MODEL_STATE"])
-        save_best.best_train_val = sd["BEST_TRAIN"]
-        save_best.best_validation_val = sd["BEST_VALIDATION"]
 
     num_epochs = 20
     unpacker =transformer_unpacker

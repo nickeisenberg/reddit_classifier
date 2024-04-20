@@ -1,5 +1,5 @@
 from torch.nn import CrossEntropyLoss, Module
-from torch import Tensor, argmax, no_grad, load
+from torch import Tensor, argmax, no_grad
 from torch.optim import Adam
 
 from src.callbacks import (
