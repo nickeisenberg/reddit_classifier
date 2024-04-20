@@ -4,7 +4,7 @@ from src.transformer.layers import Transformer
 from src.data.dataset import TextFolderWithBertTokenizer
 from src.data.utils import transformer_unpacker
 
-from src.callbacks import (
+from src_trainer.callbacks import (
     Accuracy,
     CSVLogger,
     ConfusionMatrix,
@@ -12,7 +12,7 @@ from src.callbacks import (
     SaveBestCheckoint
 )
 
-from src.trainer_module.train_module import TrainModule
+from train_module import TrainModule
 
 
 def config_datasets():
@@ -71,7 +71,7 @@ def config_save_roots():
     return state_dict_root, loss_log_root, metrics_root
 
 
-def config_trainer(train=True):
+def config_trainer(load_checkpoint=False):
     tdataset, vdataset, edataset = config_datasets()
     vocab_size = tdataset.tokenizer.vocab_size
     tloader, vloader, eloader = config_loaders(tdataset, vdataset, edataset)
@@ -82,7 +82,7 @@ def config_trainer(train=True):
 
     model = Transformer(
         vocab_size=vocab_size,
-        num_classes=5, 
+        num_classes=10, 
         max_length=max_length, 
         embed_size=64,
         num_layers=5, 
@@ -107,30 +107,25 @@ def config_trainer(train=True):
     )
     pbar_updater = ProgressBarUpdater()
 
-    if train: 
-        train_module = TrainModule(
-            model=model, 
-            device=device,
-            accuracy=accuracy,
-            conf_mat=conf_mat,
-            logger=logger,
-            save_best=save_best,
-            progress_bar_updater=pbar_updater
-        )
-    else:
-        train_module = TrainModule(
-            model=model, 
-            device=device,
-            accuracy=accuracy,
-            conf_mat=conf_mat,
-            logger=logger,
-            save_best=save_best,
-            progress_bar_updater=pbar_updater,
-            load_state_dict_from=os.path.join(
-                state_dict_root, "validation_ckp.pth"
-            )
-        )
 
+    if load_checkpoint: 
+        load_state_dict_from = os.path.join(
+            state_dict_root, "validation_ckp.pth"
+        )
+        sd = load(load_state_dict_from, map_location="cpu")
+        model.load_state_dict(sd["MODEL_STATE"])
+        save_best.best_train_val = sd["BEST_TRAIN"]
+        save_best.best_validation_val = sd["BEST_VALIDATION"]
+
+    train_module = TrainModule(
+        model=model, 
+        device=device,
+        accuracy=accuracy,
+        conf_mat=conf_mat,
+        logger=logger,
+        save_best=save_best,
+        progress_bar_updater=pbar_updater
+    )
 
     num_epochs = 20
     unpacker =transformer_unpacker

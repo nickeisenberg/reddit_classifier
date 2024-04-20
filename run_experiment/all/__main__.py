@@ -2,7 +2,7 @@ import os
 from sys import path
 path.append(os.getcwd())
 
-from src.trainer.trainer import Trainer 
+from src_trainer.trainer.trainer import Trainer 
 from config import config_trainer 
 
 config = config_trainer(load_checkpoint=True)
