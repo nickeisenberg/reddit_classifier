@@ -1,4 +1,5 @@
 import os
+import json
 
 from torch.utils.data import DataLoader
 from torch import load
@@ -36,6 +37,12 @@ def config_datasets():
         label_id_map=train_dataset.label_to_id,
         max_length=max_length
     )
+
+    save_root = os.path.relpath(__file__)
+    save_root = save_root.split(os.path.basename(save_root))[0]
+    with open(os.path.join(save_root, "label_to_id.json"), "w") as write_json:
+        json.dump(train_dataset.label_to_id, write_json)
+
     return train_dataset, validation_dataset, evalutaion_dataset
 
 
