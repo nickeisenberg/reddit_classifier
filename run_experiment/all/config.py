@@ -1,5 +1,6 @@
 import os
 from torch.utils.data import DataLoader
+from torch import load
 from src.transformer.layers import Transformer
 from src.data.dataset import TextFolderWithBertTokenizer
 from src.data.utils import transformer_unpacker
@@ -59,7 +60,7 @@ def config_save_roots():
     return state_dict_root, loss_log_root, metrics_root
 
 
-def config_trainer(train=True):
+def config_trainer(load_checkpoint=False):
     tdataset, vdataset, edataset = config_datasets()
     vocab_size = tdataset.tokenizer.vocab_size
     tloader, vloader, eloader = config_loaders(tdataset, vdataset, edataset)
@@ -95,30 +96,24 @@ def config_trainer(train=True):
     )
     pbar_updater = ProgressBarUpdater()
 
-    if train: 
-        train_module = TrainModule(
-            model=model, 
-            device=device,
-            accuracy=accuracy,
-            conf_mat=conf_mat,
-            logger=logger,
-            save_best=save_best,
-            progress_bar_updater=pbar_updater
-        )
-    else:
-        train_module = TrainModule(
-            model=model, 
-            device=device,
-            accuracy=accuracy,
-            conf_mat=conf_mat,
-            logger=logger,
-            save_best=save_best,
-            progress_bar_updater=pbar_updater,
-            load_state_dict_from=os.path.join(
-                state_dict_root, "validation_ckp.pth"
-            )
-        )
+    train_module = TrainModule(
+        model=model, 
+        device=device,
+        accuracy=accuracy,
+        conf_mat=conf_mat,
+        logger=logger,
+        save_best=save_best,
+        progress_bar_updater=pbar_updater
+    )
 
+    if load_checkpoint: 
+        load_state_dict_from = os.path.join(
+            state_dict_root, "validation_ckp.pth"
+        )
+        sd = load(load_state_dict_from, map_location="cpu")
+        train_module.model.load_state_dict(sd["MODEL_STATE"])
+        save_best.best_train_val = sd["BEST_TRAIN"]
+        save_best.best_validation_val = sd["BEST_VALIDATION"]
 
     num_epochs = 20
     unpacker =transformer_unpacker

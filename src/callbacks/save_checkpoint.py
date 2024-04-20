@@ -85,10 +85,14 @@ class SaveBestCheckoint(Callback):
             checkpoint["MODEL_STATE"] = model.module.state_dict()
             checkpoint["OPTIMIZER_STATE"] = optimizer.state_dict()
             checkpoint["EPOCHS_RUN"] = trainer.current_epoch 
+            checkpoint["BEST_TRAIN"] = self.best_train_val 
+            checkpoint["BEST_VALIDATION"] = self.best_validation_val 
         else:
             checkpoint["MODEL_STATE"] = model.state_dict()
             checkpoint["OPTIMIZER_STATE"] = optimizer.state_dict()
             checkpoint["EPOCHS_RUN"] = trainer.current_epoch 
+            checkpoint["BEST_TRAIN"] = self.best_train_val 
+            checkpoint["BEST_VALIDATION"] = self.best_validation_val 
     
         save(checkpoint, save_to)
         print(f"EPOCH {trainer.current_epoch} checkpoint saved at {save_to}")
