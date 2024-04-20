@@ -97,4 +97,18 @@ if __name__ == "__main__":
             "soccer": "sports"
        }
     )
+    
     dataset.label_to_id
+    
+    
+    input = dataset.tokenizer.encode_plus(
+        "hello there", 
+        add_special_tokens=True, 
+        max_length=256, 
+        padding="max_length",
+        truncation=True,
+        return_tensors="pt"
+    )
+    
+    input["input_ids"].shape
+    input["attention_mask"].shape
