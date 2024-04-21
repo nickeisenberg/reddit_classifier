@@ -12,7 +12,7 @@ from sys import path
 path.append(__file__.split("app")[0])
 
 from src.transformer.layers import Transformer
-from src.data.reddit import lower_text_and_remove_all_non_asci
+from src.data.utils import lower_text_and_remove_all_non_asci
 
 
 class RedditClassifier(nn.Module):
