@@ -2,7 +2,7 @@ from torch.nn import CrossEntropyLoss, Module
 from torch import Tensor, argmax, no_grad
 from torch.optim import Adam
 
-from src_trainer.callbacks import (
+from src.trainer.callbacks import (
     Accuracy,
     CSVLogger,
     SaveBestCheckoint,

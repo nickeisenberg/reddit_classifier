@@ -7,7 +7,7 @@ from torch import load
 from src.transformer.layers import Transformer
 from src.data.dataset import TextFolderWithBertTokenizer
 from src.data.utils import transformer_unpacker
-from src_trainer.callbacks import (
+from src.trainer.callbacks import (
     Accuracy,
     CSVLogger,
     ConfusionMatrix,
