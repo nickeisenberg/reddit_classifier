@@ -10,7 +10,9 @@ from transformers import BertTokenizer
 
 from sys import path
 path.append(__file__.split("app")[0])
+
 from src.transformer.layers import Transformer
+from src.data.reddit import lower_text_and_remove_all_non_asci
 
 
 class RedditClassifier(nn.Module):
@@ -40,7 +42,9 @@ class RedditClassifier(nn.Module):
 
     def forward(self, text):
         self.eval()
-        input_ids, input_masks = self.encode(text)
+        input_ids, input_masks = self.encode(
+            lower_text_and_remove_all_non_asci(text)
+        )
         with no_grad():
             prediction = argmax(self.model(input_ids, input_masks)[0])
         return self.id_to_label[int(prediction.item())]

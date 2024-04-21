@@ -68,7 +68,7 @@ def config_save_roots():
     return state_dict_root, loss_log_root, metrics_root
 
 
-def config_trainer(load_checkpoint=False):
+def config_trainer(load_checkpoint=True):
     tdataset, vdataset, edataset = config_datasets()
     vocab_size = tdataset.tokenizer.vocab_size
     tloader, vloader, eloader = config_loaders(tdataset, vdataset, edataset)
@@ -105,15 +105,20 @@ def config_trainer(load_checkpoint=False):
     pbar_updater = ProgressBarUpdater()
 
 
-    if load_checkpoint: 
+    if load_checkpoint:
         load_state_dict_from = os.path.join(
             state_dict_root, "validation_ckp.pth"
         )
-        sd = load(load_state_dict_from, map_location="cpu")
-        model.load_state_dict(sd["MODEL_STATE"])
-        save_best.best_train_val = sd["BEST_TRAIN"]
-        save_best.best_validation_val = sd["BEST_VALIDATION"]
+        if os.path.isfile(load_state_dict_from):
+            sd = load(load_state_dict_from, map_location="cpu")
+            model.load_state_dict(sd["MODEL_STATE"])
+            save_best.best_train_val = sd["BEST_TRAIN"]
+            save_best.best_validation_val = sd["BEST_VALIDATION"]
+            save_best.starting_epoch = sd["EPOCHS_RUN"]
+        else:
+            print("No state dict found, training from scratch")
 
+        
     train_module = TrainModule(
         model=model, 
         device=device,
@@ -124,7 +129,7 @@ def config_trainer(load_checkpoint=False):
         progress_bar_updater=pbar_updater
     )
 
-    num_epochs = 20
+    num_epochs = 200
     unpacker =transformer_unpacker
     config = {
         "train_module": train_module,

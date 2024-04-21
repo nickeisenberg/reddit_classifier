@@ -8,6 +8,7 @@ class Trainer:
     def __init__(self, train_module: nn.Module):
         self.train_module = train_module 
         
+        self.starting_epoch = 1
         self.current_epoch = 0 
         self.which_pass = "N/A" 
 
@@ -21,7 +22,7 @@ class Trainer:
 
         self.call("before_all_epochs")
 
-        for epoch in range(1, num_epochs + 1):
+        for epoch in range(self.starting_epoch, num_epochs + 1):
             self.current_epoch = epoch
             self.which_pass = "train" 
 

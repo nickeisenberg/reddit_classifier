@@ -14,6 +14,7 @@ class SaveBestCheckoint(Callback):
                  train_check = lambda cur, prev: cur < prev,
                  best_validation_val = 1e6,
                  validation_check = lambda cur, prev: cur < prev,
+                 starting_epoch: int = 1
                  ):
         self.state_dict_root = state_dict_root 
 
@@ -23,7 +24,7 @@ class SaveBestCheckoint(Callback):
         self.train_check = train_check
         self.best_validation_val = best_validation_val
         self.validation_check = validation_check
-
+        self.starting_epoch = starting_epoch
 
     def before_all_epochs(self, trainer: Trainer, *args, **kwargs):
         assert hasattr(trainer, "train_module")
@@ -38,6 +39,9 @@ class SaveBestCheckoint(Callback):
 
         assert hasattr(trainer, "which_pass")
         assert hasattr(trainer, "current_epoch")
+        assert hasattr(trainer, "starting_epoch")
+
+        trainer.starting_epoch = self.starting_epoch
 
 
     def after_train_epoch_pass(self, trainer: Trainer, *args, **kwargs):
