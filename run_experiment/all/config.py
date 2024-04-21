@@ -100,7 +100,10 @@ def config_trainer(load_checkpoint=True):
     logger = CSVLogger(loss_log_root)
     save_best = SaveBestCheckoint(
         state_dict_root=state_dict_root,
-        key="total_loss"
+        train_key="total_loss",
+        validation_key="accuracy",
+        best_validation_val=-1,
+        validation_check = lambda cur, prev: cur > prev,
     )
     pbar_updater = ProgressBarUpdater()
 
