@@ -42,7 +42,7 @@ class RedditClassifier(nn.Module):
 
     def forward(self, text):
         self.eval()
-        input_ids, input_masks = self.encode(
+        input_ids, input_masks = self._tokenize_text(
             lower_text_and_remove_all_non_asci(text)
         )
         with no_grad():
@@ -50,7 +50,7 @@ class RedditClassifier(nn.Module):
         return self.id_to_label[int(prediction.item())]
 
 
-    def encode(self, text) -> tuple[Tensor, Tensor]:
+    def _tokenize_text(self, text) -> tuple[Tensor, Tensor]:
         input = self.tokenizer.encode_plus(
             text, 
             add_special_tokens=True, 

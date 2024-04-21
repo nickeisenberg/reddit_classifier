@@ -1,5 +1,6 @@
 import os
 import json
+from torch import load
 
 from torch.utils.data import DataLoader
 
@@ -90,7 +91,7 @@ def config_trainer(load_checkpoint=False):
 
     model = Transformer(
         vocab_size=vocab_size,
-        num_classes=10, 
+        num_classes=5, 
         max_length=max_length, 
         embed_size=64,
         num_layers=5, 
@@ -111,7 +112,10 @@ def config_trainer(load_checkpoint=False):
     logger = CSVLogger(loss_log_root)
     save_best = SaveBestCheckoint(
         state_dict_root=state_dict_root,
-        key="total_loss"
+        train_key="total_loss",
+        validation_key="accuracy",
+        best_validation_val=-1,
+        validation_check = lambda cur, prev: cur > prev,
     )
     pbar_updater = ProgressBarUpdater()
 
@@ -120,10 +124,14 @@ def config_trainer(load_checkpoint=False):
         load_state_dict_from = os.path.join(
             state_dict_root, "validation_ckp.pth"
         )
-        sd = load(load_state_dict_from, map_location="cpu")
-        model.load_state_dict(sd["MODEL_STATE"])
-        save_best.best_train_val = sd["BEST_TRAIN"]
-        save_best.best_validation_val = sd["BEST_VALIDATION"]
+        if os.path.isfile(load_state_dict_from):
+            sd = load(load_state_dict_from, map_location="cpu")
+            model.load_state_dict(sd["MODEL_STATE"])
+            save_best.best_train_val = sd["BEST_TRAIN"]
+            save_best.best_validation_val = sd["BEST_VALIDATION"]
+            save_best.starting_epoch = sd["EPOCHS_RUN"]
+        else:
+            print("No state dict found, training from scratch")
 
     train_module = TrainModule(
         model=model, 
@@ -135,7 +143,7 @@ def config_trainer(load_checkpoint=False):
         progress_bar_updater=pbar_updater
     )
 
-    num_epochs = 20
+    num_epochs = 200
     unpacker =transformer_unpacker
     config = {
         "train_module": train_module,

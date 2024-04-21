@@ -9,7 +9,8 @@ from .base import Callback
 class SaveBestCheckoint(Callback):
     def __init__(self, 
                  state_dict_root: str, 
-                 key: str,
+                 train_key: str,
+                 validation_key: str,
                  best_train_val = 1e6,
                  train_check = lambda cur, prev: cur < prev,
                  best_validation_val = 1e6,
@@ -18,7 +19,8 @@ class SaveBestCheckoint(Callback):
                  ):
         self.state_dict_root = state_dict_root 
 
-        self.key = key
+        self.train_key = train_key
+        self.validation_key = validation_key
 
         self.best_train_val = best_train_val
         self.train_check = train_check
@@ -45,14 +47,14 @@ class SaveBestCheckoint(Callback):
 
 
     def after_train_epoch_pass(self, trainer: Trainer, *args, **kwargs):
-        assert self.key in trainer.train_module.logger.train_history
+        assert self.train_key in trainer.train_module.logger.train_history
 
         if self.save_checkpoint_flag(trainer, trainer.which_pass):
             self.save_checkpoint(trainer, trainer.which_pass)
 
 
     def after_validation_epoch_pass(self, trainer: Trainer, *args, **kwargs):
-        assert self.key in trainer.train_module.logger.validation_history
+        assert self.validation_key in trainer.train_module.logger.validation_history
         if self.save_checkpoint_flag(trainer, trainer.which_pass):
             self.save_checkpoint(trainer, trainer.which_pass)
 
@@ -61,13 +63,13 @@ class SaveBestCheckoint(Callback):
         save_ckp = False
     
         if which == "train":
-            value = trainer.train_module.logger.train_history[self.key][-1]
+            value = trainer.train_module.logger.train_history[self.train_key][-1]
             if self.train_check(value, self.best_train_val):
                 save_ckp = True
                 self.best_train_val = value
     
         elif which == "validation":
-            value = trainer.train_module.logger.validation_history[self.key][-1]
+            value = trainer.train_module.logger.validation_history[self.validation_key][-1]
             if self.validation_check(value, self.best_validation_val):
                 save_ckp = True
                 self.best_validation_val = value

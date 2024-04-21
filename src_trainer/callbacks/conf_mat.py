@@ -107,7 +107,7 @@ class ConfusionMatrix(Callback):
         fig.colorbar(cax)
         ax.set_xticks(np.arange(len(class_names)))
         ax.set_yticks(np.arange(len(class_names)))
-        ax.set_xticklabels(class_names, rotation=45, ha="right")
+        ax.set_xticklabels(class_names, rotation=45)
         ax.set_yticklabels(class_names)
     
         for i in range(matrix.shape[0]):
