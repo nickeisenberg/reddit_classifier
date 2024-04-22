@@ -1,6 +1,6 @@
 #! /usr/bin/bash
 
-#SBATCH --job-name=model
+#SBATCH --job-name=6ly_bs64_512emb_8h
 #SBATCH --output=out.%x.o%j.log
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
