@@ -113,9 +113,7 @@ def config_trainer(load_checkpoint=False):
     save_best = SaveBestCheckoint(
         state_dict_root=state_dict_root,
         train_key="total_loss",
-        validation_key="accuracy",
-        best_validation_val=-1,
-        validation_check = lambda cur, prev: cur > prev,
+        validation_key="total_loss",
     )
     pbar_updater = ProgressBarUpdater()
 
@@ -143,7 +141,7 @@ def config_trainer(load_checkpoint=False):
         progress_bar_updater=pbar_updater
     )
 
-    num_epochs = 200
+    num_epochs = 50
     unpacker =transformer_unpacker
     config = {
         "train_module": train_module,
