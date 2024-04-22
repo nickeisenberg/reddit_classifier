@@ -3,13 +3,9 @@
 A transformer classifer trained on comments from 10 popular subreddits.
 The subreddits choosen all have a popular "Daily" chat post and 100 comments
 were scraped from the last 100 "Daily" posts of each of the subreddits. The 
-comments were scraped using `praw`. Training consisted of 20 epochs.
-
-I really like the callback system that pytorch lightning uses and wanted to
-experiment coding a lightweight version of this. The `Trainer` found in 
-`./src/trainer/trainer.py` implements this and all of the callbacks used are
-in `./src/callbacks`. The `TrainModule` in `./src/trainer_module/train_module.py` 
-will implement the callbacks.
+comments were scraped using `praw` and latest comments in the dataset occured
+on April 11. So the comments from any "Discussion" post created after April 11
+will be new to the model.
 
 # Some Results
 
