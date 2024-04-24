@@ -5,7 +5,7 @@ path.append(os.getcwd())
 from src.trainer import Trainer 
 from config import config_trainer 
 
-config = config_trainer(load_checkpoint=True)
+config = config_trainer(load_checkpoint=False)
 
 if __name__ == "__main__":
     Trainer(config["train_module"]).fit(
