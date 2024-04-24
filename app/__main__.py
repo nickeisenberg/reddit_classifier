@@ -1,6 +1,6 @@
 from flask import Flask, request, render_template
 
-from src.classifier import RedditClassifier
+from classifier import RedditClassifier
 
 app = Flask(__name__)
 

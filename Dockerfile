@@ -1,13 +1,20 @@
 FROM python:3.11-slim
 
-WORKDIR /app
+WORKDIR /flask_app
 
-COPY ./app /app
+ENV PYTHONPATH /flask_app
 
-COPY rec_app.txt /app/rec_app.txt
+COPY ./app /flask_app/app
+COPY ./src /flask_app/src
+
+COPY rec_app.txt /flask_app/rec_app.txt
+
 RUN pip install --no-cache-dir -r rec_app.txt
+
+# get cpu pytorch
 RUN pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+
 
 EXPOSE 5000
 
-CMD ["python", "__main__.py"]
+CMD ["python", "app"]
