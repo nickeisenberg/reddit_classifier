@@ -27,11 +27,11 @@ class RedditClassifier(Module):
             heads=4,
         )
         
-        with open(os.path.join("app", "label_to_id.json"), "r") as read_json:
+        with open("label_to_id.json", "r") as read_json:
             self.id_to_label = json.load(read_json)
         self.id_to_label = {v: k for k, v in self.id_to_label.items()}
 
-        sd = load(os.path.join("app", "validation_ckp.pth"), map_location="cpu")
+        sd = load("validation_ckp.pth", map_location="cpu")
         self.model.load_state_dict(sd["MODEL_STATE"])
 
 

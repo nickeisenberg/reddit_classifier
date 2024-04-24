@@ -21,9 +21,6 @@ requests==2.31.0
 safetensors==0.4.3
 sympy==1.12
 tokenizers==0.19.1
-torch==2.3.0+cpu
-torchaudio==2.3.0+cpu
-torchvision==0.18.0+cpu
 tqdm==4.66.2
 transformers==4.40.1
 typing_extensions==4.9.0
