@@ -24,10 +24,10 @@ class RedditClassifier(nn.Module):
             vocab_size=self.tokenizer.vocab_size,
             num_classes=10, 
             max_length=256, 
-            embed_size=512,
-            num_layers=4, 
+            embed_size=256,
+            num_layers=6, 
             forward_expansion=4,
-            heads=8,
+            heads=4,
         )
         
         app_root = os.path.relpath(__file__)
