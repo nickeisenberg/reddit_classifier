@@ -1,6 +1,11 @@
 from flask import Flask, request, render_template
 
-from classifier import RedditClassifier
+try:
+    from classifier import RedditClassifier
+except:
+    from sys import path
+    path.append(__file__.split("app")[0])
+    from app.classifier import RedditClassifier
 
 app = Flask(__name__)
 
