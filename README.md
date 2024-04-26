@@ -17,15 +17,4 @@ one another. Lastly soccer and chealsefc get confused.
 
 ![](./run_experiment/all_6layers_bs64_256emb_4hd/metrics/evaluation_ep0.png) 
 
-
-If we collapse the above classes by group and retrain the transformer, then 
-results are much better. I collaped the classes as follows:
-```
-    finance = ["Bitcoin", "CryptoCurrency", "wallstreetbets"]
-    soccer = ["soccer", "chelseafc"]
-    pop_culture = ["movies", "popheads", "hiphopheads"]
-    pelotoncycle = "pelotoncycle"
-    formula1 = "formula1"
-```
-
-![](./run_experiment/all_collapsed/metrics/evaluation_ep0.png) 
+![](./run_experiment/all_6layers_bs64_256emb_4hd/loss_logs/loss_and_accuracy.png) 
