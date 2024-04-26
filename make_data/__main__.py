@@ -19,7 +19,7 @@ if __name__ == "__main__":
         # "chelseafc": "Daily Discussion Thread",
         # "pelotoncycle": "Daily Discussion",
         # "popheads": "Daily Discussion",
-        "hiphopheads": "Daily Discussion",
+        # "hiphopheads": "Daily Discussion",
     }
     
     make_reddit_comment_dataset(

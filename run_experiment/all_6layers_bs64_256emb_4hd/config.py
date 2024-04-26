@@ -132,7 +132,7 @@ def config_trainer(load_checkpoint=True):
         progress_bar_updater=pbar_updater
     )
 
-    num_epochs = 50
+    num_epochs = 40
     unpacker =transformer_unpacker
     config = {
         "train_module": train_module,
