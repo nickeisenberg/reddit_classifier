@@ -25,3 +25,6 @@ validation accuracy, which occured on the 29th epoch.
 ![](./experiment/metrics/evaluation_ep0.png) 
 
 ![](./experiment/loss_logs/loss_and_accuracy.png) 
+
+
+# Try it out
