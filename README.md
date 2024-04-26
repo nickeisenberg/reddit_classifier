@@ -19,7 +19,7 @@ Below are the results of the transformer on the testing data after 40 epochs of
 training and validating. The transformer had 6 "multihead attention" layers
 with 4 heads each and an embedded dimension of 256. A max token length of 256
 was also chosen. The full configuration of the experiment is in
-`./run_experiment/all_6layers_bs64_256emb_4hd`. I saved the best model based on
+`./experiment/config.py`. I saved the best model based on
 validation accuracy, which occured on the 29th epoch.
 
 ![](./experiment/metrics/evaluation_ep0.png) 
