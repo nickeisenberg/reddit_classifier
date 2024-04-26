@@ -22,6 +22,6 @@ was also chosen. The full configuration of the experiment is in
 `./run_experiment/all_6layers_bs64_256emb_4hd`. I saved the best model based on
 validation accuracy, which occured on the 29th epoch.
 
-![](./run_experiment/all_6layers_bs64_256emb_4hd/metrics/evaluation_ep0.png) 
+![](./experiment/metrics/evaluation_ep0.png) 
 
-![](./run_experiment/all_6layers_bs64_256emb_4hd/loss_logs/loss_and_accuracy.png) 
+![](./experiment/loss_logs/loss_and_accuracy.png) 
