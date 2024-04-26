@@ -47,8 +47,10 @@ install some of the requirements.
 
 ```bash 
 git clone https://github.com/nickeisenberg/reddit_classifier.git cd
-reddit_classifier gdown 1R7JVUWz5h02T8c7UqsWI8pZjkDjfKvKa mv validation_ckp.pth
-app pip install -r rec.app.txt 
+reddit_classifier 
+gdown 1R7JVUWz5h02T8c7UqsWI8pZjkDjfKvKa 
+mv validation_ckp.pth app 
+pip install -r rec.app.txt 
 ```
 
 You also need to install the `cpu` version of `pytorch` for your OS found
