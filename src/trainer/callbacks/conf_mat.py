@@ -69,11 +69,6 @@ class ConfusionMatrix(Callback):
         """
         Compute a confusion matrix for multi-class classification.
     
-        Parameters:
-        - targets: A list of actual target values.
-        - predictions: A list of predictions.
-        - num_classes: The number of classes in the classification problem.
-    
         Returns:
         - A 2D numpy array representing the confusion matrix.
         """
@@ -90,11 +85,6 @@ class ConfusionMatrix(Callback):
                                   figsize: tuple[int, int] = (12, 8)) -> Figure:
         """
         Plot the confusion matrix using matplotlib.
-    
-        Parameters:
-        - matrix: A 2D numpy array representing the confusion matrix.
-        - class_names: A list of names for the classes.
-        - figsize: Figure dimension tuple (width, height).
         """
         class_names = [str(name) for name in class_names]
         accuracy = np.round(np.trace(matrix) / np.sum(matrix) * 100, 2)

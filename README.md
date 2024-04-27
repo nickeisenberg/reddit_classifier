@@ -4,7 +4,30 @@ subreddits. The subreddits choosen all have a popular "discussion" chat post
 and at most 100 comments were scraped using `praw` from the last 100 discussion
 posts of the subreddits. Oddly enough, these were the only subreddits that I
 could seem to find that had a reocurring chat that conistantly had atleast 100
-comments in it. All of the comments scraped are found in `./data.tar.gz`.
+comments in it. 
+
+All of the comments scraped are found in `./data.tar.gz` and can be unzipped
+with `tar -xzvf data.tar.gz`. The unzipped data folder is of the following
+form.
+
+```
+data
+├── <subreddit name>
+│   ├── test
+│   │    └──<submission_id>_<comment_id>.txt 
+│   │    └──...
+│   ├── train
+│   │    └──<submission_id>_<comment_id>.txt 
+│   │    └──...
+│   └── val
+│        └──<submission_id>_<comment_id>.txt 
+│        └──...
+```
+
+Above, `<submission_id>` and `<comment_id>` refer `praw.models.Submission.id` 
+and `praw.models.Comment.id` and each `txt` has exactly one comment in it. The 
+comment has been lowed and stripped of all non asci characters which was
+handled by `src.data.utils.lower_text_and_remove_all_non_asci`.
 
 All of the discussion posts except the `movies` posts shared a common theme.
 The `movies` discussion posts were all discussions about a particular movie,
@@ -13,10 +36,6 @@ while the discussion posts from the other subreddits were all general "daily
 discussion" type posts [like this soccer post](https://www.reddit.com/r/soccer/comments/1cdcxww/daily_discussion/) 
 for examples. The latest comments in the dataset occured on April 11, 2024, so
 any comment created after April 11 will be new to the model.
-
-Alternatively, you can down download the data
-directly from
-[here](https://drive.google.com/drive/folders/1MdYmlTaZhMoeRNwAw3jc0pDtTFLvWMH-).
 
 
 # Some Results 
