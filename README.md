@@ -77,22 +77,19 @@ docker run -p 5000:5000 nickeisenberg/reddit-comment-classifier:v0.0
 
 # Small Demo 
 Here are two comments from April 26th's
-[soccer](https://www.reddit.com/r/soccer/comments/1cdcxww/daily_discussion/)
+[soccer](https://www.reddit.com/r/soccer/comments/1ce59q1/comment/l1h5nzl/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button)
 and
-[chelseafc](https://www.reddit.com/r/chelseafc/comments/1cdcy2m/daily_discussion_thread/)
+[chelseafc](https://www.reddit.com/r/chelseafc/comments/1cdcy2m/comment/l1fvy53/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button)
 daily discussion
 
-* Soccer: Wirtz potentially using Bayern as a stepping stone to playing abroad
-  feels weird, feel like they are the one club along with Barcelona(Exception
-  being R9 one time and i guess Neymar but that was a money thing) and Madrid
-  that does not happen to and Kroos doesn't really count because it was a money
-  thing 
+* Soccer: Dante since turning 35 has already racked up almost 200 appearances
+  for OGC Nice. Honestly fair play to him he was never the greatest CB on the
+  planet but staying at a mid-level club in a top league into your 40's is
+  always very impressive
 
   ![](./soccer.png) 
 
-* Chelseafc: I find whole conversation around Poch odd. We’re conceding so many
-  goals right now but nobody seems worried. The club are still reviewing and
-  will decide at the end of the season?? And the players want Poch to stay too.
-  Any pundits are talking like it’s madness to sack Poch. 
+* Chelseafc: Knowing he is for sale , Martín Zubimendi is the defensive
+  midfielder we should have went in for over Caicedo.
 
   ![](./chelsea.png) 
