@@ -1,10 +1,11 @@
 # About 
-A transformer classifier trained on comments from 10 popular
-subreddits. The subreddits choosen all have a popular "discussion" chat post
-and at most 100 comments were scraped using `praw` from the last 100 discussion
-posts of the subreddits. Oddly enough, these were the only subreddits that I
-could seem to find that had a reocurring chat that conistantly had atleast 100
-comments in it. 
+A transformer classifier trained on comments from the following 10 popular
+subreddits: Bitcoin, CryptoCurrency, hiphopheads, pelotoncycle, soccer
+chelseafc, formula1, movies, popheads, wallstreetbets. The subreddits choosen
+all have a popular "discussion" chat post and at most 100 comments were scraped
+using `praw` from the last 100 discussion posts of the subreddits. Oddly
+enough, these were the only subreddits that I could seem to find that had a
+reocurring chat that conistantly had atleast 100 comments in it. 
 
 All of the comments scraped are found in `./data.tar.gz` and can be unzipped
 with `tar -xzvf data.tar.gz`. The unzipped data folder is of the following
