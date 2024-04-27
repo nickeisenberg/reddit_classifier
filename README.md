@@ -76,7 +76,7 @@ docker run -p 5000:5000 nickeisenberg/reddit-comment-classifier:v0.0
 ```
 
 # Small Demo 
-Here are two comments from April 26th's
+Here are two comments from April 27th's
 [soccer](https://www.reddit.com/r/soccer/comments/1ce59q1/comment/l1h5nzl/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button)
 and
 [chelseafc](https://www.reddit.com/r/chelseafc/comments/1cdcy2m/comment/l1fvy53/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button)
