@@ -40,8 +40,8 @@ The following will clone the repo and download the weights with `gdown` and
 install some of the requirements.
 
 ```bash 
-git clone https://github.com/nickeisenberg/reddit_classifier.git cd
-reddit_classifier 
+git clone https://github.com/nickeisenberg/reddit_classifier.git 
+cd reddit_classifier 
 gdown https://drive.google.com/uc?id=1R7JVUWz5h02T8c7UqsWI8pZjkDjfKvKa 
 mv validation_ckp.pth app 
 pip install -r rec.app.txt 
